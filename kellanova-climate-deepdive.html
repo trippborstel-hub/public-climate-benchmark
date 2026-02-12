@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kellanova — Climate Strategy Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090C;
+    --surface: #0D1117;
+    --surface2: #131920;
+    --border: #1B2430;
+    --border-accent: #2A3A4E;
+    --text: #D1D5DB;
+    --text-muted: #6B7280;
+    --text-dim: #3E4854;
+    --heading: #F0F2F5;
+    --accent: #E8720C;
+    --accent-dim: #7A3D06;
+    --green: #22C55E;
+    --green-dim: #14532D;
+    --yellow: #EAB308;
+    --yellow-dim: #713F12;
+    --red: #EF4444;
+    --red-dim: #7F1D1D;
+    --blue: #3B82F6;
+    --blue-dim: #1E3A5F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV BAR ─────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,9,12,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar .back-link {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--accent); text-decoration: none; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar .back-link:hover { text-decoration: underline; }
+  .topbar .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.5px;
+  }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .hero {
+    padding: 64px 32px 48px;
+    max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Anybody', sans-serif; font-size: 42px;
+    font-weight: 700; color: var(--heading); letter-spacing: -1px;
+    line-height: 1.15; margin-bottom: 8px;
+  }
+  .hero-sub {
+    font-size: 16px; color: var(--text-muted); margin-bottom: 24px;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 24px;
+  }
+  .meta-chip {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 6px 14px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .meta-chip strong { color: var(--text); font-weight: 500; }
+  .meta-chip.status-good { border-color: var(--green-dim); }
+  .meta-chip.status-good strong { color: var(--green); }
+  .meta-chip.status-warn { border-color: var(--yellow-dim); }
+  .meta-chip.status-warn strong { color: var(--yellow); }
+  .meta-chip.status-bad { border-color: var(--red-dim); }
+  .meta-chip.status-bad strong { color: var(--red); }
+
+  /* ── LAYOUT ──────────────────────────────────── */
+  .page-container {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px 80px;
+  }
+
+  /* Anchor nav */
+  .section-nav {
+    position: sticky; top: 49px; z-index: 90;
+    background: rgba(7,9,12,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0; margin-bottom: 40px;
+    overflow-x: auto; white-space: nowrap;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .section-nav a {
+    display: inline-block; padding: 14px 18px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.5px; color: var(--text-dim);
+    text-decoration: none; border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .section-nav a:hover { color: var(--text-muted); }
+  .section-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Section blocks */
+  .section {
+    margin-bottom: 56px; scroll-margin-top: 120px;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'Anybody', sans-serif; font-size: 28px;
+    font-weight: 300; color: var(--text-dim);
+    min-width: 40px;
+  }
+  .section-title-group { flex: 1; }
+  .section-esrs {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; color: var(--accent-dim);
+    text-transform: uppercase; margin-bottom: 2px;
+  }
+  .section-title {
+    font-family: 'Anybody', sans-serif; font-size: 20px;
+    font-weight: 600; color: var(--heading); letter-spacing: -0.3px;
+  }
+
+  /* Maturity badge */
+  .maturity {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; padding: 5px 12px;
+    border-radius: 4px; text-transform: uppercase; font-weight: 500;
+    white-space: nowrap;
+  }
+  .maturity.comprehensive { background: var(--green-dim); color: var(--green); }
+  .maturity.partial { background: var(--yellow-dim); color: var(--yellow); }
+  .maturity.not-disclosed { background: var(--red-dim); color: var(--red); }
+
+  /* Data cards */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'Anybody', sans-serif; font-size: 32px;
+    font-weight: 600; color: var(--heading); line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .card-value.small { font-size: 22px; }
+  .card-unit {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted);
+  }
+  .card-delta {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    margin-top: 8px;
+  }
+  .card-delta.positive { color: var(--green); }
+  .card-delta.negative { color: var(--red); }
+
+  /* Prose blocks */
+  .prose { max-width: 760px; margin-bottom: 24px; }
+  .prose p { margin-bottom: 14px; color: var(--text); }
+  .prose strong { color: var(--heading); font-weight: 600; }
+  .prose em { color: var(--text-muted); }
+
+  /* Data table */
+  .data-table-wrap {
+    overflow-x: auto; margin-bottom: 24px;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .data-table th {
+    text-align: left; padding: 12px 16px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .data-table th:first-child { border-radius: 10px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 10px 0 0; }
+  .data-table td {
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(232,114,12,0.03); }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table .highlight { color: var(--accent); font-weight: 500; }
+
+  /* SVG chart container */
+  .chart-container {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px; margin-bottom: 24px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 1px; color: var(--text-muted);
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+
+  /* Bar chart */
+  .bar-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .bar-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 100px; text-align: right;
+  }
+  .bar-track {
+    flex: 1; height: 20px; background: var(--surface2);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text); min-width: 80px;
+  }
+
+  /* Roadmap / Timeline */
+  .timeline { padding-left: 24px; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 8px;
+    bottom: 8px; width: 1px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; padding: 0 0 28px 28px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -20px; top: 6px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+  }
+  .timeline-dot.done { background: var(--accent); border-color: var(--accent); }
+  .timeline-dot.current { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.4); }
+  .timeline-year {
+    font-family: 'Anybody', sans-serif; font-size: 16px;
+    font-weight: 600; color: var(--heading); margin-bottom: 4px;
+  }
+  .timeline-text {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+  }
+
+  /* Key-value detail rows */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; background: var(--surface);
+    margin-bottom: 24px;
+  }
+  .detail-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:nth-last-child(-n+2) { border-bottom: none; }
+  .detail-key {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 4px;
+  }
+  .detail-val {
+    font-size: 14px; color: var(--heading); font-weight: 400;
+  }
+  .detail-val.accent { color: var(--accent); }
+  .detail-val.green { color: var(--green); }
+  .detail-val.muted { color: var(--text-muted); font-style: italic; }
+
+  /* Source citations */
+  .source-note {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); padding: 12px 16px;
+    background: var(--surface2); border-radius: 6px;
+    margin-top: 16px; line-height: 1.6;
+  }
+  .source-note a { color: var(--accent-dim); }
+
+  /* Callout box */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(232,114,12,0.04);
+    padding: 16px 20px; border-radius: 0 8px 8px 0;
+    margin-bottom: 24px;
+  }
+  .callout p {
+    font-size: 13px; color: var(--text); line-height: 1.7;
+  }
+  .callout-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* Peer comparison mini-bar */
+  .peer-bar-wrap { margin-bottom: 24px; }
+  .peer-bar-item {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+  .peer-bar-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 110px; text-align: right;
+  }
+  .peer-bar-name.current { color: var(--accent); font-weight: 500; }
+  .peer-bar-track {
+    flex: 1; height: 10px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden; max-width: 320px;
+  }
+  .peer-bar-fill {
+    height: 100%; border-radius: 3px; background: var(--border-accent);
+  }
+  .peer-bar-fill.current { background: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  /* Footer */
+  .page-footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TOP BAR ═══════════════════════ -->
+<nav class="topbar">
+  <a href="dashboard.html" class="back-link">← Back to Benchmark</a>
+  <span class="breadcrumb">/ Climate Benchmark / Kellanova</span>
+</nav>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<header class="hero">
+  <div class="hero-label">Company Climate Strategy Deep Dive</div>
+  <h1>Kellanova</h1>
+  <p class="hero-sub">~$13B revenue (2023) · Spun off from Kellogg Oct 2023 · Acquired by Mars Dec 2025 ($36B) · Chicago, IL · 23,000+ associates · 145+ markets</p>
+  <div class="hero-meta">
+    <span class="meta-chip status-warn"><strong>SBTi Committed</strong> (not yet validated)</span>
+    <span class="meta-chip status-good"><strong>Net Zero 2050</strong></span>
+    <span class="meta-chip">Scope <strong>1 + 2 + 3</strong></span>
+    <span class="meta-chip">RE Target <strong>100% by 2030</strong></span>
+    <span class="meta-chip">Baseline <strong>2015</strong></span>
+    <span class="meta-chip status-warn"><strong>Acquired by Mars</strong> Dec 2025</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════ SECTION NAV ═══════════════════════ -->
+<div class="page-container">
+<nav class="section-nav">
+  <a href="#transition" class="active">Transition Plan</a>
+  <a href="#emissions">Emissions</a>
+  <a href="#targets">Targets</a>
+  <a href="#energy">Energy</a>
+  <a href="#risk">Risk & Resilience</a>
+  <a href="#credits">Carbon Credits</a>
+  <a href="#financial">Financial Effects</a>
+  <a href="#governance">Governance</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1: TRANSITION PLAN (ESRS E1-1)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="transition">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-1 · CDP C3</div>
+      <div class="section-title">Transition Plan for Climate Change Mitigation</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Kellanova's climate transition plan is anchored in the <strong>Better Days Promise</strong> — a commitment to create better days for 4 billion people by 2030. Following the October 2023 spin-off from Kellogg Company, Kellanova inherited and reaffirmed the company's existing climate commitments, including a net-zero-by-2050 target approved by SBTi.</p>
+    <p>The company committed to the <strong>SBTi Net-Zero Standard in November 2023</strong>, establishing aggressive near-term targets aligned with a 1.5°C pathway. However, as of the Mars acquisition closing in December 2025, Kellanova had not yet received full SBTi validation for its targets — the commitment was made but the validation process was still underway.</p>
+    <p>Kellanova's transition plan is structured around <strong>three pillars</strong>: operational energy transformation (100% renewable electricity by 2030), supply chain decarbonization (focusing on agriculture, packaging, and logistics), and deforestation elimination across primary commodities.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Net Zero Target</div>
+      <div class="card-value">2050</div>
+      <div class="card-unit">Full value chain (Scope 1+2+3)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 1&2 Interim</div>
+      <div class="card-value">−66.5%</div>
+      <div class="card-unit">Absolute by 2030 vs. 2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 Interim</div>
+      <div class="card-value">−25%</div>
+      <div class="card-unit">Absolute by 2030 vs. 2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">FLAG Emissions</div>
+      <div class="card-value small">−45.5%</div>
+      <div class="card-unit">Forest, Land & Agriculture by 2030</div>
+    </div>
+  </div>
+
+  <!-- Decarbonization Levers -->
+  <div class="chart-container">
+    <div class="chart-title">Key Decarbonization Levers</div>
+    <div class="bar-row">
+      <span class="bar-label">Agriculture</span>
+      <div class="bar-track"><div class="bar-fill" style="width:45%; background: var(--accent);"></div></div>
+      <span class="bar-value">Regenerative ag & sourcing</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Deforestation</span>
+      <div class="bar-track"><div class="bar-fill" style="width:20%; background: var(--green);"></div></div>
+      <span class="bar-value">Zero by Dec 2025</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Energy</span>
+      <div class="bar-track"><div class="bar-fill" style="width:20%; background: var(--blue);"></div></div>
+      <span class="bar-value">100% RE by 2030</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Packaging</span>
+      <div class="bar-track"><div class="bar-fill" style="width:10%; background: var(--yellow);"></div></div>
+      <span class="bar-value">Recyclable/reusable by 2030</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Logistics</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">Fleet optimization</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Locked-In Emissions</div>
+      <div class="detail-val muted">Not quantified in public disclosures</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CapEx Aligned to Climate</div>
+      <div class="detail-val muted">Not specifically disclosed; integrated into operational budgets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Internal Carbon Price</div>
+      <div class="detail-val muted">Not disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Taxonomy Alignment</div>
+      <div class="detail-val muted">Not reported</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Analyst Assessment</div>
+    <p>Kellanova's transition plan is credible in structure but faces a unique challenge: the company existed as an independent entity for only ~2 years (Oct 2023 – Dec 2025) before being acquired by Mars. During that window, it reaffirmed inherited Kellogg commitments and committed to SBTi Net-Zero, but had limited time to establish an independent track record. Going forward, Kellanova's targets will be integrated into Mars' broader net-zero framework, which is SBTi-validated and backed by $2.7B in climate investment.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova Better Days Promise · Kellanova TCFD Disclosure · Kellanova Climate Action Page · SBTi Target Dashboard · Mars/Kellanova acquisition press releases (2024–2025)
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2: GHG EMISSIONS PROFILE (ESRS E1-6)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="emissions">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-6 · CDP C6 · CDP C7</div>
+      <div class="section-title">GHG Emissions Profile</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Kellanova's emissions profile inherits from Kellogg Company's pre-spin-off data. The company measures GHG emissions across Scope 1, 2, and 3 according to the <strong>GHG Protocol Corporate Standard</strong>, with independent verification by <strong>Apex Companies LLC</strong>. As of the 2022 reporting year (the last full-year data under the Kellogg umbrella), the combined entity had achieved a <strong>31.1% absolute reduction in Scope 1 & 2 emissions</strong> versus the 2015 baseline.</p>
+    <p>Post-spin-off emissions data for Kellanova as a standalone entity has limited public availability. The company committed to publishing its first independent Social and Environmental Report (detailing 2024 progress) in 2025, but the Mars acquisition in December 2025 complicated this timeline.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Scope 1&2 Reduction (2022)</div>
+      <div class="card-value small">−31.1%</div>
+      <div class="card-unit">vs. 2015 baseline (pre-spin-off, Kellogg)</div>
+      <div class="card-delta positive">On track for −66.5% by 2030</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 Reduction (2021)</div>
+      <div class="card-value small">−13%</div>
+      <div class="card-unit">vs. 2015 baseline (pre-spin-off, Kellogg)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Reporting Boundary</div>
+      <div class="card-value small">Global</div>
+      <div class="card-unit">All Kellanova-owned operations</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Standalone Data</div>
+      <div class="card-value small" style="color: var(--yellow);">Pending</div>
+      <div class="card-unit">First independent report planned for 2025</div>
+    </div>
+  </div>
+
+  <!-- Progress table -->
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th>Scope 1&2 Progress</th>
+          <th>Scope 3 Progress</th>
+          <th>RE %</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">2015 (Baseline)</td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+          <td class="num">~10%</td>
+          <td>Kellogg Company baseline year</td>
+        </tr>
+        <tr>
+          <td>2019</td>
+          <td class="num">~−20%</td>
+          <td class="num">~−8%</td>
+          <td class="num">~25%</td>
+          <td>Kellogg Company (pre-spin-off)</td>
+        </tr>
+        <tr>
+          <td>2021</td>
+          <td class="num">~−28%</td>
+          <td class="num highlight">−13%</td>
+          <td class="num">~35%</td>
+          <td>Most recent Scope 3 data point</td>
+        </tr>
+        <tr>
+          <td class="highlight">2022</td>
+          <td class="num highlight">−31.1%</td>
+          <td class="num">~−14%</td>
+          <td class="num highlight">40.3%</td>
+          <td>Last full Kellogg Company year</td>
+        </tr>
+        <tr>
+          <td>Oct 2023</td>
+          <td class="num" colspan="3" style="text-align:center; color:var(--yellow);">— Kellanova spin-off from Kellogg —</td>
+          <td>Baseline reestablishment needed</td>
+        </tr>
+        <tr>
+          <td>2024</td>
+          <td class="num" style="color:var(--text-dim);">Not yet reported</td>
+          <td class="num" style="color:var(--text-dim);">Not yet reported</td>
+          <td class="num" style="color:var(--text-dim);">Est. >45%</td>
+          <td>First standalone Kellanova year</td>
+        </tr>
+        <tr>
+          <td style="color:var(--yellow);">Dec 2025</td>
+          <td class="num" colspan="3" style="text-align:center; color:var(--accent);">— Acquired by Mars, Incorporated —</td>
+          <td>Integration into Mars framework</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Peer Comparison -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Scope 1&2 Reduction Progress (vs. Baseline)</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:34%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">−34% (S1+2)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Kellanova</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:31.1%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">−31.1% (S1+2)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">BellRing</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:95%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">−95% (S2)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Post Holdings</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:15%; background: var(--border-accent);"></div></div>
+        <span class="bar-value" style="font-size:11px;">−15% (S1+2)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Herbalife</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:0%; background: var(--text-dim);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--text-dim);">Not disclosed</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Reporting Standard</div>
+      <div class="detail-val">GHG Protocol Corporate Standard + Scope 3 Standard</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Verification</div>
+      <div class="detail-val">Apex Companies LLC (independent third-party)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scope 2 Method</div>
+      <div class="detail-val">Market-based (primary)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Baseline Restatement</div>
+      <div class="detail-val accent">Required post-spin-off; methodology under development at time of Mars acquisition</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova Better Days Promise · Kellogg Company 2022 ESG Data · Kellanova TCFD Disclosure · Kellanova CDP Responses (2016–2024) · Apex Companies LLC verification statements
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3: TARGETS & PROGRESS (ESRS E1-4)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="targets">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-4 · CDP C4</div>
+      <div class="section-title">Climate Targets & Progress</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Scope</th>
+          <th>Type</th>
+          <th>Base Year</th>
+          <th>Target Year</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>−66.5% Scope 1+2</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2030</td>
+          <td class="highlight">31.1% achieved (of 66.5%)</td>
+        </tr>
+        <tr>
+          <td>−25% Scope 3</td>
+          <td>3</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2030</td>
+          <td>13% achieved (of 25%)</td>
+        </tr>
+        <tr>
+          <td>−45.45% FLAG emissions</td>
+          <td>1+3 (FLAG)</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2030</td>
+          <td>In progress</td>
+        </tr>
+        <tr>
+          <td>Zero deforestation</td>
+          <td>3 (supply chain)</td>
+          <td>Absolute</td>
+          <td>—</td>
+          <td>Dec 2025</td>
+          <td style="color:var(--yellow);">Target date reached</td>
+        </tr>
+        <tr>
+          <td>100% Renewable Electricity</td>
+          <td>2</td>
+          <td>Procurement</td>
+          <td>—</td>
+          <td>2030</td>
+          <td>40.3% achieved (2022)</td>
+        </tr>
+        <tr>
+          <td>−90% Scope 1+2</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2050</td>
+          <td>Long-term</td>
+        </tr>
+        <tr>
+          <td>−90% Scope 3</td>
+          <td>3</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2050</td>
+          <td>Long-term</td>
+        </tr>
+        <tr>
+          <td>−72% FLAG</td>
+          <td>1+3 (FLAG)</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2050</td>
+          <td>Long-term</td>
+        </tr>
+        <tr>
+          <td>Net Zero</td>
+          <td>1+2+3</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2050</td>
+          <td>Committed (SBTi)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Roadmap Timeline -->
+  <div class="chart-container">
+    <div class="chart-title">Decarbonization Roadmap</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2015 — Baseline</div>
+        <div class="timeline-text">Kellogg Company establishes baseline emissions across all scopes. Sustainability commitments launched under Kellogg's Better Days Promise.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2019 — RE100 & Science-Based Targets</div>
+        <div class="timeline-text">Kellogg joins RE100 and commits to 100% renewable energy. Science-based targets set for Scope 1, 2, and 3 reductions. ~20% Scope 1&2 reduction achieved.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2022 — Strong Operational Progress</div>
+        <div class="timeline-text">31.1% Scope 1&2 reduction achieved. 40.3% renewable electricity. 13% Scope 3 reduction. VPPA for wind energy in North America operational. Solar deployed across India, South Africa, Thailand, and Malaysia.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">Oct 2023 — Kellanova Spin-Off</div>
+        <div class="timeline-text">Kellogg separates into Kellanova (global snacking, ~$13B revenue) and WK Kellogg Co (North American cereal). Kellanova inherits and reaffirms all climate commitments. Commits to SBTi Net-Zero Standard (November 2023).</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-year">2024 — Independent Operations</div>
+        <div class="timeline-text">First full year as Kellanova. Updated SBTi targets: −66.5% S1+2, −25% S3, −45.45% FLAG by 2030. Mars announces $36B acquisition (August 2024). Initial Social and Environmental Report in development.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">Dec 2025 — Mars Acquisition Closes</div>
+        <div class="timeline-text">Mars completes $36B acquisition of Kellanova. Combined Mars Snacking: ~$36B revenue, 80 facilities, 50,000+ associates. Kellanova targets to be integrated into Mars' validated SBTi net-zero framework.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2030 — Interim Targets</div>
+        <div class="timeline-text">−66.5% Scope 1+2 · −25% Scope 3 · −45.45% FLAG · 100% renewable electricity · Zero deforestation across primary commodities. Under Mars ownership, targets expected to align with Mars' broader −50% total GHG target.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2050 — Net Zero</div>
+        <div class="timeline-text">−90% Scope 1+2 · −90% Scope 3 · −72% FLAG · Net zero across full value chain. Now part of Mars' 2050 net-zero commitment.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Target Type</div>
+      <div class="detail-val green">Gross absolute (no credit netting)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">SBTi Status</div>
+      <div class="detail-val" style="color: var(--yellow);">Committed to Net-Zero Standard (Nov 2023) — not yet validated</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Pathway Alignment</div>
+      <div class="detail-val">1.5°C (Paris Agreement)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Post-Acquisition</div>
+      <div class="detail-val accent">Targets to be integrated into Mars' SBTi-validated framework</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova Better Days Promise · Kellanova Climate Action Commitments · SBTi Target Dashboard · Kellogg Company ESG Data (2022) · Mars/Kellanova acquisition press releases
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4: ENERGY CONSUMPTION & MIX (ESRS E1-5)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="energy">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-5 · CDP C8</div>
+      <div class="section-title">Energy Consumption & Mix</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Renewable Electricity</div>
+      <div class="card-value small">40.3%</div>
+      <div class="card-unit">of global electricity (2022)</div>
+      <div class="card-delta positive">↑ from ~10% in 2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">RE Target</div>
+      <div class="card-value small">100%</div>
+      <div class="card-unit">by 2030 (accelerated from 2050)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">RE100 Member</div>
+      <div class="card-value small" style="color: var(--green);">Yes</div>
+      <div class="card-unit">Committed to 100% renewable energy</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Water Reduction</div>
+      <div class="card-value small">−30%</div>
+      <div class="card-unit">in high water stress regions by 2030</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>Kellanova's energy strategy is diversified across geographies. The company uses <strong>solar energy</strong> at manufacturing facilities in India, South Africa, Thailand, and Malaysia; <strong>wind energy</strong> via a long-term virtual power purchase agreement (VPPA) in North America; and <strong>hydropower</strong> providing 100% of electricity at operations in Colombia. The 100% renewable electricity target was accelerated from the original Kellogg Company deadline of 2050 to <strong>2030</strong>.</p>
+    <p>The RE100 membership and multi-technology approach across geographies positions Kellanova well for continued progress. Under Mars ownership, Kellanova's energy transition will benefit from Mars' larger-scale procurement power and existing 59% renewable electricity achievement.</p>
+  </div>
+
+  <!-- RE Sources -->
+  <div class="chart-container">
+    <div class="chart-title">Renewable Energy Mix by Source & Region</div>
+    <div class="bar-row">
+      <span class="bar-label">Wind (N. America)</span>
+      <div class="bar-track"><div class="bar-fill" style="width:40%; background: var(--blue);"></div></div>
+      <span class="bar-value">VPPA — largest single source</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Solar (Asia)</span>
+      <div class="bar-track"><div class="bar-fill" style="width:25%; background: var(--yellow);"></div></div>
+      <span class="bar-value">India, Thailand, Malaysia</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Solar (Africa)</span>
+      <div class="bar-track"><div class="bar-fill" style="width:10%; background: var(--yellow);"></div></div>
+      <span class="bar-value">South Africa</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Hydro (LATAM)</span>
+      <div class="bar-track"><div class="bar-fill" style="width:15%; background: var(--green);"></div></div>
+      <span class="bar-value">Colombia (100% of local ops)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Grid / Other</span>
+      <div class="bar-track"><div class="bar-fill" style="width:60%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">~59.7% remaining (2022)</span>
+    </div>
+  </div>
+
+  <!-- Peer Comparison: RE -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Renewable Energy Progress</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Shaklee</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% (Achieved)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">BellRing</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% by 2025</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Hain Celestial</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% by 2025</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:59%; background: var(--border-accent);"></div></div>
+        <span class="bar-value" style="font-size:11px;">59% — Target 2040</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Kellanova</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:40.3%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">40.3% — Target 2030</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Herbalife</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:5%; background: var(--text-dim);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--text-dim);">~5% (limited)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova Renewable Electricity Page · Kellogg Company ESG Data (2022) · RE100 Member Profile · Company sustainability reports for peer data
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 5: CLIMATE RISK & RESILIENCE (ESRS E1-2, E1-3)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="risk">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-2 · E1-3 · CDP C2</div>
+      <div class="section-title">Climate Risk Identification & Resilience</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Kellanova is a <strong>TCFD signatory</strong> and has conducted climate scenario analysis to assess physical and transition risks across its value chain. As a global snacking company reliant on agricultural commodities — including <strong>wheat, corn, palm oil, cocoa, soy, and rice</strong> — Kellanova faces significant exposure to climate-driven disruptions in crop yields and supply chain logistics.</p>
+    <p>The 2023 10-K filing identifies climate change as a material business risk, citing potential impacts on raw material costs, agricultural productivity, and regulatory compliance.</p>
+  </div>
+
+  <!-- Physical Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Physical Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Type</th><th>Time Horizon</th><th>Value Chain Impact</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Drought affecting grain & corn yields</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Upstream (Global)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Extreme weather disrupting supply chains</td><td>Acute</td><td>Short-Medium</td>
+            <td>Upstream + Distribution</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Water stress in manufacturing regions</td><td>Chronic</td><td>Medium</td>
+            <td>Own operations</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Heat stress reducing crop quality</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Upstream (tropics)</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Flooding at manufacturing / distribution sites</td><td>Acute</td><td>Short</td>
+            <td>Own operations</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transition Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Transition Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Category</th><th>Time Horizon</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>EU Deforestation Regulation (EUDR) compliance</td><td>Policy & Legal</td><td>Short</td>
+            <td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Carbon pricing / border adjustment mechanisms</td><td>Policy & Legal</td><td>Short-Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Packaging regulations (single-use plastics)</td><td>Policy & Legal</td><td>Short</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Consumer preference shifts to sustainable brands</td><td>Market</td><td>Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Reputational risk from agricultural Scope 3</td><td>Reputation</td><td>Short</td>
+            <td style="color:var(--text-muted);">Low-Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Scenario Analysis</div>
+      <div class="detail-val">Conducted (aligned with TCFD)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scenarios Used</div>
+      <div class="detail-val muted">Not fully disclosed in public reports</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Resilience Assessment</div>
+      <div class="detail-val">Partial — supply chain diversification and regenerative agriculture</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Adaptation Measures</div>
+      <div class="detail-val">30% water reduction in high-stress regions; regenerative ag partnerships; commodity diversification</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Gap Assessment</div>
+    <p>Kellanova's TCFD disclosures cover risk identification but lack quantified financial impact estimates. Scenario analysis methodology (specific scenarios, temperature pathways, time horizons) is not fully disclosed. Under ESRS E1-2 and E1-3, more granular physical and transition risk quantification would be required. The Mars acquisition may improve disclosure quality, as Mars has more mature risk assessment frameworks — though Mars also has gaps in financial quantification.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova TCFD Disclosure · Kellanova 10-K (2023) · Kellanova Better Days Promise · CDP Climate Change Response
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 6: CARBON CREDITS & OFFSETS (ESRS E1-7)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="credits">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-7 · CDP C11</div>
+      <div class="section-title">Carbon Credits, Offsets & Removals</div>
+    </div>
+    <span class="maturity not-disclosed">Not Disclosed</span>
+  </div>
+
+  <div class="prose">
+    <p>Kellanova has <strong>not publicly disclosed</strong> any use of carbon credits, offsets, or removal strategies. The company's SBTi-committed targets are <strong>gross absolute targets</strong> with no indication of credit netting — consistent with SBTi requirements for near-term targets.</p>
+    <p>No internal carbon pricing mechanism has been disclosed. The company's climate strategy is focused on <strong>direct operational reductions</strong> (renewable energy, efficiency) and <strong>supply chain engagement</strong> (deforestation, regenerative agriculture) rather than offset-based approaches.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Credits Used for Targets</div>
+      <div class="card-value small" style="color: var(--green);">None</div>
+      <div class="card-unit">Gross targets — no credit netting</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Offset Strategy</div>
+      <div class="card-value small" style="color: var(--text-dim);">N/A</div>
+      <div class="card-unit">No offset program disclosed</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Internal Carbon Price</div>
+      <div class="card-value small" style="color: var(--text-dim);">N/A</div>
+      <div class="card-unit">Not disclosed</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Post-Acquisition</div>
+      <div class="card-value small" style="color: var(--accent);">Mars</div>
+      <div class="card-unit">Mars uses internal carbon price for CapEx/R&D</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova Better Days Promise · Kellanova CDP Response · SBTi Target Dashboard
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7: FINANCIAL EFFECTS (ESRS E1-9, E1-11)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="financial">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-9 · E1-11 · CDP C3.4</div>
+      <div class="section-title">Anticipated Financial Effects</div>
+    </div>
+    <span class="maturity not-disclosed">Not Disclosed</span>
+  </div>
+
+  <div class="prose">
+    <p>Kellanova's financial disclosures related to climate are <strong>limited</strong>. The company acknowledged climate as a material risk in its 10-K filings but did not provide quantified financial impact estimates for physical or transition risks. Climate-related CapEx, OpEx, and revenue-at-risk figures were not separately disclosed.</p>
+    <p>The <strong>$36 billion Mars acquisition</strong> fundamentally changes the financial context. Kellanova's climate investments and costs will now be subsumed within Mars' $2.7B climate CapEx program and broader Sustainability Investment Fund.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Revenue (2023)</div>
+      <div class="card-value small">~$13B</div>
+      <div class="card-unit">Final full year as public company</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Climate CapEx</div>
+      <div class="card-value small" style="color: var(--text-dim);">N/D</div>
+      <div class="card-unit">Not separately disclosed</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Acquisition Value</div>
+      <div class="card-value small">$36B</div>
+      <div class="card-unit">Mars acquisition (Dec 2025)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Combined Revenue</div>
+      <div class="card-value small">~$36B</div>
+      <div class="card-unit">Mars Snacking (post-merger)</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Financial Risk Quantification</div>
+      <div class="detail-val muted">Not publicly quantified</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Revenue at Risk from Climate</div>
+      <div class="detail-val muted">Not disclosed (10-K cites material risk qualitatively)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Assets at Risk</div>
+      <div class="detail-val muted">Not disclosed (80+ manufacturing sites globally)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate Opportunities</div>
+      <div class="detail-val">Sustainable packaging, plant-based products (MorningStar Farms), regenerative sourcing</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">CSRD Readiness Gap</div>
+    <p>Kellanova's financial climate disclosures represent the most significant gap relative to ESRS requirements. ESRS E1-9 and E1-11 require quantified financial effects from physical and transition risks, reconciled to financial statements. As a now-private entity under Mars, Kellanova's future CSRD obligations will depend on Mars' European reporting scope and whether Kellanova's operations fall within the consolidation boundary.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova 10-K (2023) · Mars/Kellanova acquisition press releases · Mars SIG Report 2024
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 8: GOVERNANCE & ACCOUNTABILITY (ESRS 2 GOV)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="governance">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS 2 GOV · CDP C1</div>
+      <div class="section-title">Governance & Accountability</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Kellanova maintained a Board-level <strong>Social Responsibility and Public Policy Committee</strong> with oversight of environmental and sustainability matters. CEO Steve Cahillane served as Chairman, President, and CEO through the Mars acquisition. The company had a dedicated VP of Sustainability role and a sustainability team responsible for executing climate commitments.</p>
+    <p>CDP reporting has been maintained annually since 2016. Post-acquisition, Kellanova's governance structure will be absorbed into Mars' framework, which includes a dedicated Chief Climate Officer and board-level sustainability committee.</p>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Board Oversight</div>
+      <div class="detail-val green">Social Responsibility & Public Policy Committee</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CEO at Acquisition</div>
+      <div class="detail-val">Steve Cahillane (Chairman, President & CEO)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Sustainability Leadership</div>
+      <div class="detail-val">VP Sustainability + dedicated sustainability team</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Executive Compensation</div>
+      <div class="detail-val muted">Climate link to compensation not explicitly disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CDP Reporting</div>
+      <div class="detail-val">Annual since 2016 (under Kellogg, then Kellanova)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Reporting Frameworks</div>
+      <div class="detail-val">GRI, SASB, TCFD, CDP</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Post-Acquisition Governance</div>
+      <div class="detail-val accent">Integrated into Mars (Chief Climate Officer, Board sustainability committee, 2,000 execs with GHG-tied compensation)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Mars Snacking Leadership</div>
+      <div class="detail-val">Andrew Clarke (Global President, Mars Snacking — HQ Chicago)</div>
+    </div>
+  </div>
+
+  <!-- Peer comparison: governance -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Climate Governance Maturity</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Company</th><th>Board Oversight</th><th>Exec Comp Link</th><th>Dedicated Climate Role</th><th>CDP History</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mars</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--green);">Yes (2,000 leaders)</td>
+            <td style="color:var(--green);">Chief Climate Officer</td>
+            <td>Since 2009</td>
+          </tr>
+          <tr>
+            <td class="highlight">Kellanova</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td>VP Sustainability</td>
+            <td>Since 2016</td>
+          </tr>
+          <tr>
+            <td>Hain Celestial</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td>Sustainability team</td>
+            <td>Limited</td>
+          </tr>
+          <tr>
+            <td>BellRing Brands</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td>Sustainability team</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Post Holdings</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td>Sustainability team</td>
+            <td>CDP member</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Kellanova Investor Relations (ESG Governance) · Kellanova CDP · Kellanova Proxy Statement · Mars acquisition press releases · Company sustainability reports
+  </div>
+</div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="page-footer">
+  <p><strong style="color:var(--text-muted);">Data Compilation Notes</strong></p>
+  <p>This climate strategy profile was compiled from publicly available sources including Kellanova Better Days Promise website, Kellanova TCFD Disclosure, Kellanova 10-K filings (2023), CDP Climate Change questionnaire responses (2016–2024), Kellogg Company ESG data (2015–2022), RE100 membership profile, SBTi Target Dashboard, and Mars/Kellanova acquisition press releases (2024–2025).</p>
+  <p>Emissions reduction progress figures (31.1% S1+2, 13% S3) are from the pre-spin-off Kellogg Company reporting period. Kellanova-specific standalone data was not yet publicly available at time of compilation due to the short independent operating period (Oct 2023 – Dec 2025) and the pending first Social and Environmental Report. Renewable energy mix breakdown is estimated based on disclosed sources and geographies.</p>
+  <p style="margin-top:12px;">Compiled: February 2026 · Framework: ESRS E1 + CDP Climate Change · For benchmarking purposes only</p>
+</footer>
+
+</div><!-- /page-container -->
+
+<!-- Section nav active state script -->
+<script>
+  const navLinks = document.querySelectorAll('.section-nav a');
+  const sections = document.querySelectorAll('.section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.section-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

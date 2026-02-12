@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mars, Inc. — Climate Strategy Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090C;
+    --surface: #0D1117;
+    --surface2: #131920;
+    --border: #1B2430;
+    --border-accent: #2A3A4E;
+    --text: #D1D5DB;
+    --text-muted: #6B7280;
+    --text-dim: #3E4854;
+    --heading: #F0F2F5;
+    --accent: #E8720C;
+    --accent-dim: #7A3D06;
+    --green: #22C55E;
+    --green-dim: #14532D;
+    --yellow: #EAB308;
+    --yellow-dim: #713F12;
+    --red: #EF4444;
+    --red-dim: #7F1D1D;
+    --blue: #3B82F6;
+    --blue-dim: #1E3A5F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV BAR ─────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,9,12,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar .back-link {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--accent); text-decoration: none; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar .back-link:hover { text-decoration: underline; }
+  .topbar .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.5px;
+  }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .hero {
+    padding: 64px 32px 48px;
+    max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Anybody', sans-serif; font-size: 42px;
+    font-weight: 700; color: var(--heading); letter-spacing: -1px;
+    line-height: 1.15; margin-bottom: 8px;
+  }
+  .hero-sub {
+    font-size: 16px; color: var(--text-muted); margin-bottom: 24px;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 24px;
+  }
+  .meta-chip {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 6px 14px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .meta-chip strong { color: var(--text); font-weight: 500; }
+  .meta-chip.status-good { border-color: var(--green-dim); }
+  .meta-chip.status-good strong { color: var(--green); }
+  .meta-chip.status-warn { border-color: var(--yellow-dim); }
+  .meta-chip.status-warn strong { color: var(--yellow); }
+  .meta-chip.status-bad { border-color: var(--red-dim); }
+  .meta-chip.status-bad strong { color: var(--red); }
+
+  /* ── LAYOUT ──────────────────────────────────── */
+  .page-container {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px 80px;
+  }
+
+  /* Anchor nav */
+  .section-nav {
+    position: sticky; top: 49px; z-index: 90;
+    background: rgba(7,9,12,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0; margin-bottom: 40px;
+    overflow-x: auto; white-space: nowrap;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .section-nav a {
+    display: inline-block; padding: 14px 18px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.5px; color: var(--text-dim);
+    text-decoration: none; border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .section-nav a:hover { color: var(--text-muted); }
+  .section-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Section blocks */
+  .section {
+    margin-bottom: 56px; scroll-margin-top: 120px;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'Anybody', sans-serif; font-size: 28px;
+    font-weight: 300; color: var(--text-dim);
+    min-width: 40px;
+  }
+  .section-title-group { flex: 1; }
+  .section-esrs {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; color: var(--accent-dim);
+    text-transform: uppercase; margin-bottom: 2px;
+  }
+  .section-title {
+    font-family: 'Anybody', sans-serif; font-size: 20px;
+    font-weight: 600; color: var(--heading); letter-spacing: -0.3px;
+  }
+
+  /* Maturity badge */
+  .maturity {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; padding: 5px 12px;
+    border-radius: 4px; text-transform: uppercase; font-weight: 500;
+    white-space: nowrap;
+  }
+  .maturity.comprehensive { background: var(--green-dim); color: var(--green); }
+  .maturity.partial { background: var(--yellow-dim); color: var(--yellow); }
+  .maturity.not-disclosed { background: var(--red-dim); color: var(--red); }
+
+  /* Data cards */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'Anybody', sans-serif; font-size: 32px;
+    font-weight: 600; color: var(--heading); line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .card-value.small { font-size: 22px; }
+  .card-unit {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted);
+  }
+  .card-delta {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    margin-top: 8px;
+  }
+  .card-delta.positive { color: var(--green); }
+  .card-delta.negative { color: var(--red); }
+
+  /* Prose blocks */
+  .prose { max-width: 760px; margin-bottom: 24px; }
+  .prose p { margin-bottom: 14px; color: var(--text); }
+  .prose strong { color: var(--heading); font-weight: 600; }
+  .prose em { color: var(--text-muted); }
+
+  /* Data table */
+  .data-table-wrap {
+    overflow-x: auto; margin-bottom: 24px;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .data-table th {
+    text-align: left; padding: 12px 16px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .data-table th:first-child { border-radius: 10px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 10px 0 0; }
+  .data-table td {
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(232,114,12,0.03); }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table .highlight { color: var(--accent); font-weight: 500; }
+
+  /* SVG chart container */
+  .chart-container {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px; margin-bottom: 24px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 1px; color: var(--text-muted);
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+
+  /* Bar chart */
+  .bar-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .bar-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 72px; text-align: right;
+  }
+  .bar-track {
+    flex: 1; height: 20px; background: var(--surface2);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text); min-width: 80px;
+  }
+
+  /* Roadmap / Timeline */
+  .timeline { padding-left: 24px; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 8px;
+    bottom: 8px; width: 1px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; padding: 0 0 28px 28px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -20px; top: 6px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+  }
+  .timeline-dot.done { background: var(--accent); border-color: var(--accent); }
+  .timeline-dot.current { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.4); }
+  .timeline-year {
+    font-family: 'Anybody', sans-serif; font-size: 16px;
+    font-weight: 600; color: var(--heading); margin-bottom: 4px;
+  }
+  .timeline-text {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+  }
+
+  /* Key-value detail rows */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; background: var(--surface);
+    margin-bottom: 24px;
+  }
+  .detail-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:nth-last-child(-n+2) { border-bottom: none; }
+  .detail-key {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 4px;
+  }
+  .detail-val {
+    font-size: 14px; color: var(--heading); font-weight: 400;
+  }
+  .detail-val.accent { color: var(--accent); }
+  .detail-val.green { color: var(--green); }
+  .detail-val.muted { color: var(--text-muted); font-style: italic; }
+
+  /* Source citations */
+  .source-note {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); padding: 12px 16px;
+    background: var(--surface2); border-radius: 6px;
+    margin-top: 16px; line-height: 1.6;
+  }
+  .source-note a { color: var(--accent-dim); }
+
+  /* Callout box */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(232,114,12,0.04);
+    padding: 16px 20px; border-radius: 0 8px 8px 0;
+    margin-bottom: 24px;
+  }
+  .callout p {
+    font-size: 13px; color: var(--text); line-height: 1.7;
+  }
+  .callout-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* Peer comparison mini-bar */
+  .peer-bar-wrap { margin-bottom: 24px; }
+  .peer-bar-item {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+  .peer-bar-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 110px; text-align: right;
+  }
+  .peer-bar-name.current { color: var(--accent); font-weight: 500; }
+  .peer-bar-track {
+    flex: 1; height: 10px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden; max-width: 320px;
+  }
+  .peer-bar-fill {
+    height: 100%; border-radius: 3px; background: var(--border-accent);
+  }
+  .peer-bar-fill.current { background: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  /* Footer */
+  .page-footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TOP BAR ═══════════════════════ -->
+<nav class="topbar">
+  <a href="dashboard.html" class="back-link">← Back to Benchmark</a>
+  <span class="breadcrumb">/ Climate Benchmark / Mars, Inc.</span>
+</nav>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<header class="hero">
+  <div class="hero-label">Company Climate Strategy Deep Dive</div>
+  <h1>Mars, Incorporated</h1>
+  <p class="hero-sub">$55B revenue · Private · McLean, VA · 150,000+ associates · 70+ markets</p>
+  <div class="hero-meta">
+    <span class="meta-chip status-good"><strong>SBTi Validated</strong></span>
+    <span class="meta-chip status-good"><strong>Net Zero 2050</strong></span>
+    <span class="meta-chip">Scope <strong>1 + 2 + 3</strong></span>
+    <span class="meta-chip">DitchCarbon <strong>47/100</strong></span>
+    <span class="meta-chip">CDP Score <strong>A-</strong></span>
+    <span class="meta-chip">Baseline <strong>2015</strong></span>
+  </div>
+</header>
+
+<!-- ═══════════════════════ SECTION NAV ═══════════════════════ -->
+<div class="page-container">
+<nav class="section-nav">
+  <a href="#transition" class="active">Transition Plan</a>
+  <a href="#emissions">Emissions</a>
+  <a href="#targets">Targets</a>
+  <a href="#energy">Energy</a>
+  <a href="#risk">Risk & Resilience</a>
+  <a href="#credits">Carbon Credits</a>
+  <a href="#financial">Financial Effects</a>
+  <a href="#governance">Governance</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1: TRANSITION PLAN (ESRS E1-1)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="transition">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-1 · CDP C3</div>
+      <div class="section-title">Transition Plan for Climate Change Mitigation</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Mars published a comprehensive <strong>Net Zero Roadmap</strong> in 2023, committing to eliminate greenhouse gas emissions across its full value chain by 2050. The plan covers all Scope 1, 2, and 3 emissions — including agriculture (which represents ~60% of the footprint), manufacturing, logistics, and consumer use. The roadmap was developed in collaboration with SBTi and is aligned with a 1.5°C pathway under the Paris Agreement.</p>
+    <p>The plan is structured around <strong>five-year milestone targets</strong> with executive compensation directly tied to delivery. In 2024, Mars expanded the number of leaders with long-term compensation linked to GHG reductions from 400 to approximately 2,000.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Net Zero Target</div>
+      <div class="card-value">2050</div>
+      <div class="card-unit">Full value chain (Scope 1+2+3)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Interim Target</div>
+      <div class="card-value">−50%</div>
+      <div class="card-unit">Absolute GHG by 2030 vs. 2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Climate Investment</div>
+      <div class="card-value">$2.7B</div>
+      <div class="card-unit">Committed 2023–2025</div>
+    </div>
+    <div class="card">
+      <div class="card-label">New Innovation Fund</div>
+      <div class="card-value">$250M</div>
+      <div class="card-unit">Sustainability Investment Fund (2025)</div>
+    </div>
+  </div>
+
+  <!-- Decarbonization Levers -->
+  <div class="chart-container">
+    <div class="chart-title">Key Decarbonization Levers</div>
+    <div class="bar-row">
+      <span class="bar-label">Agriculture</span>
+      <div class="bar-track"><div class="bar-fill" style="width:60%; background: var(--accent);"></div></div>
+      <span class="bar-value">~60% of footprint</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Deforestation</span>
+      <div class="bar-track"><div class="bar-fill" style="width:20%; background: var(--green);"></div></div>
+      <span class="bar-value">Land use change</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Energy</span>
+      <div class="bar-track"><div class="bar-fill" style="width:12%; background: var(--blue);"></div></div>
+      <span class="bar-value">Renewable + efficiency</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Logistics</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: var(--yellow);"></div></div>
+      <span class="bar-value">Fleet + distribution</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Packaging</span>
+      <div class="bar-track"><div class="bar-fill" style="width:3%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">Circularity</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Locked-In Emissions</div>
+      <div class="detail-val">Not explicitly quantified in public disclosures</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CapEx Aligned to Climate</div>
+      <div class="detail-val accent">$2.7B over 3 years (2023–2025)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Internal Carbon Price</div>
+      <div class="detail-val">Yes — used for CapEx and R&D decisions</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Taxonomy Alignment</div>
+      <div class="detail-val muted">Not yet reported (private company)</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Analyst Assessment</div>
+    <p>Mars has one of the most credible transition plans in the consumer goods sector. New Climate Institute analysis (April 2024) confirmed Mars has identified reduction measures capable of achieving >50% reduction by 2030. The key risk is execution speed — by 2021, only 6% reduction had been achieved, meaning 84% of the required progress must come in 2021–2030. Recent acceleration (8% in 2023 alone) is encouraging.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars Net Zero Roadmap (2023) · Mars SIG Report 2024 · New Climate Institute Corporate Climate Responsibility Monitor (2024) · CDP Climate Change Response
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2: GHG EMISSIONS PROFILE (ESRS E1-6)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="emissions">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-6 · CDP C6 · CDP C7</div>
+      <div class="section-title">GHG Emissions Profile</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Total Emissions (2024)</div>
+      <div class="card-value">~29M</div>
+      <div class="card-unit">tCO₂e (Scope 1+2+3)</div>
+      <div class="card-delta positive">↓ 16.4% vs. 2015 baseline</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 1 (2023)</div>
+      <div class="card-value small">782k</div>
+      <div class="card-unit">tCO₂e — direct operations</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 2 (2023)</div>
+      <div class="card-value small">402k</div>
+      <div class="card-unit">tCO₂e — purchased energy</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 (2023)</div>
+      <div class="card-value small">28.0M</div>
+      <div class="card-unit">tCO₂e — value chain (96% of total)</div>
+    </div>
+  </div>
+
+  <!-- Emissions trend table -->
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th class="num">Scope 1 (kt)</th>
+          <th class="num">Scope 2 (kt)</th>
+          <th class="num">Scope 3 (kt)</th>
+          <th class="num">Total (kt)</th>
+          <th class="num">Revenue ($B)</th>
+          <th class="num">Intensity (kt/$B)</th>
+          <th class="num">% vs. 2015</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">2015 (base)</td>
+          <td class="num">980</td><td class="num">720</td>
+          <td class="num">33,200</td><td class="num">34,900</td>
+          <td class="num">33.0</td><td class="num">1,058</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td>2019</td>
+          <td class="num">870</td><td class="num">560</td>
+          <td class="num">32,070</td><td class="num">33,500</td>
+          <td class="num">40.0</td><td class="num">838</td>
+          <td class="num">−4.0%</td>
+        </tr>
+        <tr>
+          <td>2020</td>
+          <td class="num">850</td><td class="num">530</td>
+          <td class="num">31,720</td><td class="num">33,100</td>
+          <td class="num">40.0</td><td class="num">828</td>
+          <td class="num">−5.2%</td>
+        </tr>
+        <tr>
+          <td>2021</td>
+          <td class="num">830</td><td class="num">500</td>
+          <td class="num">31,470</td><td class="num">32,800</td>
+          <td class="num">45.0</td><td class="num">729</td>
+          <td class="num">−6.0%</td>
+        </tr>
+        <tr>
+          <td>2022</td>
+          <td class="num">810</td><td class="num">460</td>
+          <td class="num">30,730</td><td class="num">32,000</td>
+          <td class="num">47.0</td><td class="num">681</td>
+          <td class="num">−8.3%</td>
+        </tr>
+        <tr>
+          <td class="highlight">2023</td>
+          <td class="num highlight">782</td><td class="num highlight">402</td>
+          <td class="num highlight">28,013</td><td class="num highlight">29,200</td>
+          <td class="num">50.0</td><td class="num highlight">584</td>
+          <td class="num highlight">−16.3%</td>
+        </tr>
+        <tr>
+          <td class="highlight">2024</td>
+          <td class="num">~760</td><td class="num">~370</td>
+          <td class="num">~28,050</td><td class="num highlight">~29,180</td>
+          <td class="num">55.0</td><td class="num highlight">531</td>
+          <td class="num highlight">−16.4%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Scope 3 Category Breakdown -->
+  <div class="chart-container">
+    <div class="chart-title">Scope 3 Emissions by Category (Estimated Breakdown)</div>
+    <div class="bar-row">
+      <span class="bar-label">Agriculture</span>
+      <div class="bar-track"><div class="bar-fill" style="width:60%; background: var(--accent);"></div></div>
+      <span class="bar-value">~16,800 kt (60%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Land Use</span>
+      <div class="bar-track"><div class="bar-fill" style="width:15%; background: var(--green);"></div></div>
+      <span class="bar-value">~4,200 kt (15%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Purchased Goods</span>
+      <div class="bar-track"><div class="bar-fill" style="width:10%; background: var(--blue);"></div></div>
+      <span class="bar-value">~2,800 kt (10%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Transport</span>
+      <div class="bar-track"><div class="bar-fill" style="width:7%; background: var(--yellow);"></div></div>
+      <span class="bar-value">~1,960 kt (7%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Other</span>
+      <div class="bar-track"><div class="bar-fill" style="width:8%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">~2,240 kt (8%)</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Reporting Standard</div>
+      <div class="detail-val">GHG Protocol Corporate Standard + Scope 3 Standard</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scope 2 Method</div>
+      <div class="detail-val">Market-based (primary) and Location-based</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Verification</div>
+      <div class="detail-val">Third-party limited assurance</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Baseline Restatement</div>
+      <div class="detail-val accent">Restated in 2024 (+2M tonnes to baseline for acquisitions)</div>
+    </div>
+  </div>
+
+  <!-- Peer Comparison -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Scope Reporting Completeness</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:100%"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Kellanova</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%"></div></div>
+        <span class="bar-value" style="font-size:11px;">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Hain Celestial</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%"></div></div>
+        <span class="bar-value" style="font-size:11px;">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">BellRing</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%"></div></div>
+        <span class="bar-value" style="font-size:11px;">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Post Holdings</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%"></div></div>
+        <span class="bar-value" style="font-size:11px;">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Herbalife</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:66%"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--yellow);">S1+S2 only</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Simply Good</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:66%"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--yellow);">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Shaklee</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%"></div></div>
+        <span class="bar-value" style="font-size:11px;">S1+S2+S3</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars SIG Report 2024 · DitchCarbon · Mars CDP Climate Change 2023 Response · Baseline restated per Mars 2024 methodology. Scope 3 category breakdown estimated from Mars disclosures on agriculture share (~60%) and deforestation.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3: TARGETS & PROGRESS (ESRS E1-4)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="targets">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-4 · CDP C4</div>
+      <div class="section-title">Climate Targets & Progress</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Scope</th>
+          <th>Type</th>
+          <th>Base Year</th>
+          <th>Target Year</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>−50% total GHG</td>
+          <td>1+2+3</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2030</td>
+          <td class="highlight">16.4% achieved (of 50%)</td>
+        </tr>
+        <tr>
+          <td>−63% Scope 1+2</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2030</td>
+          <td>34% achieved</td>
+        </tr>
+        <tr>
+          <td>−42% Scope 3</td>
+          <td>3</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2030</td>
+          <td>~16% achieved</td>
+        </tr>
+        <tr>
+          <td>−45.5% FLAG emissions</td>
+          <td>1+3 (FLAG)</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2030</td>
+          <td>In progress</td>
+        </tr>
+        <tr>
+          <td>−90% Scope 1+2</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2040</td>
+          <td>Long-term</td>
+        </tr>
+        <tr>
+          <td>−90% Scope 3</td>
+          <td>3</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2050</td>
+          <td>Long-term</td>
+        </tr>
+        <tr>
+          <td>Net Zero</td>
+          <td>1+2+3</td>
+          <td>Absolute</td>
+          <td>2015</td>
+          <td>2050</td>
+          <td>Committed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Roadmap Timeline -->
+  <div class="chart-container">
+    <div class="chart-title">Decarbonization Roadmap</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2015 — Baseline</div>
+        <div class="timeline-text">~34.9M tCO₂e total value chain emissions (restated). Mars SIG Plan launched in 2017 with initial $1B investment.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2021 — Net Zero Commitment</div>
+        <div class="timeline-text">Mars sets net zero by 2050 target, joins SBTi 1.5°C pledge and Race to Zero. 6% reduction achieved from baseline — slow early progress while building supply chain engagement.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2023 — Acceleration</div>
+        <div class="timeline-text">Record 8% year-on-year reduction. Net Zero Roadmap published. $1B+ climate investment committed for 2023–2026 business cycle. SBTi validates near-term targets.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-year">2024 — Current Position</div>
+        <div class="timeline-text">16.4% total reduction achieved. 2,000 leaders' compensation tied to GHG targets. $250M Sustainability Investment Fund launched. First land-based carbon removals (~42,000 tCO₂e). Revenue grown 69% to ~$55B since baseline.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2025 — Near-Term Milestones</div>
+        <div class="timeline-text">Complete deforestation mapping for beef, cocoa, palm oil, pulp/paper, soy. Integrate Kellanova emissions into baseline. 100% soy & cocoa supplier assessment. Target: $2.7B cumulative climate investment.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2030 — Interim Target</div>
+        <div class="timeline-text">−50% total GHG · −63% Scope 1+2 · −42% Scope 3 · −45.5% FLAG · 1M+ acres regenerative agriculture. New Climate Institute assessment: measures identified are sufficient to deliver >50% reduction.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2040 — Operations Milestone</div>
+        <div class="timeline-text">−90% Scope 1+2 · 100% renewable electricity globally.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2050 — Net Zero</div>
+        <div class="timeline-text">Net zero across full value chain. −90% Scope 3. Residual emissions addressed through high-quality removals.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Target Type</div>
+      <div class="detail-val green">Gross absolute (no credit netting)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">SBTi Status</div>
+      <div class="detail-val green">Near-term targets validated (2023)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Pathway Alignment</div>
+      <div class="detail-val">1.5°C (Paris Agreement)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Target Boundary</div>
+      <div class="detail-val">Full value chain including acquisitions (restated)</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars SIG Report 2024 · Mars Net Zero Roadmap (2023) · SBTi Target Dashboard · New Climate Institute CCRM 2024 · Mars press releases
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4: ENERGY CONSUMPTION & MIX (ESRS E1-5)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="energy">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-5 · CDP C8</div>
+      <div class="section-title">Energy Consumption & Mix</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Renewable Electricity</div>
+      <div class="card-value">59%</div>
+      <div class="card-unit">of global electricity (2023)</div>
+      <div class="card-delta positive">↑ from ~25% in 2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">RE Target</div>
+      <div class="card-value small">100%</div>
+      <div class="card-unit">renewable electricity by 2040</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Heat Decarbonization</div>
+      <div class="card-value small">Pilot</div>
+      <div class="card-unit">First electric heat at Netherlands chocolate plant</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 1+2 Reduction</div>
+      <div class="card-value small">−34%</div>
+      <div class="card-unit">vs. 2015 baseline</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>Mars' energy strategy combines <strong>renewable electricity procurement</strong> (PPAs and direct purchasing), <strong>on-site generation</strong>, <strong>energy efficiency</strong> improvements at manufacturing facilities, and emerging <strong>heat decarbonization</strong> through electrification. The company has pioneered its first electric heat project at a chocolate factory in the Netherlands, with plans to expand industrial heat decarbonization across the manufacturing network.</p>
+    <p>Energy efficiency improvements at manufacturing sites and technology-driven logistics optimization have been key drivers of Scope 1 and 2 reductions. Mars has achieved a 34% reduction in operational emissions since 2015 and is on track for its 63% reduction target by 2030.</p>
+  </div>
+
+  <!-- Peer Comparison: RE Targets -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Renewable Energy Targets</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Shaklee</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% (Achieved)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">BellRing</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% by 2025</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Hain Celestial</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% by 2025</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Kellanova</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:80%; background: var(--blue);"></div></div>
+        <span class="bar-value" style="font-size:11px;">100% by 2030</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:59%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">59% — Target 2040</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Herbalife</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:5%; background: var(--text-dim);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--text-dim);">Solar (Costa Rica only)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars SIG Report 2024 · Mars CDP Climate Change 2023 · Company sustainability reports for peer data
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 5: CLIMATE RISK & RESILIENCE (ESRS E1-2, E1-3)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="risk">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-2 · E1-3 · CDP C2</div>
+      <div class="section-title">Climate Risk Identification & Resilience</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Mars has conducted <strong>climate scenario analysis</strong> aligned with TCFD recommendations, examining both physical and transition risks across its value chain. As a company heavily dependent on agricultural commodities (cocoa, dairy, rice, soy, palm oil), Mars faces significant exposure to both acute weather events and chronic shifts in growing conditions.</p>
+  </div>
+
+  <!-- Physical Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Physical Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Type</th><th>Time Horizon</th><th>Value Chain Impact</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Drought affecting cocoa yields</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Upstream (West Africa)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Flooding at manufacturing sites</td><td>Acute</td><td>Short-Medium</td>
+            <td>Own operations</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Water stress in rice supply chains</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Upstream (Asia)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Heat stress on dairy livestock</td><td>Chronic</td><td>Medium</td>
+            <td>Upstream (Global)</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Extreme weather disrupting logistics</td><td>Acute</td><td>Short</td>
+            <td>Distribution</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transition Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Transition Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Category</th><th>Time Horizon</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Carbon pricing / EU ETS expansion</td><td>Policy & Legal</td><td>Short-Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Deforestation regulation (EUDR)</td><td>Policy & Legal</td><td>Short</td>
+            <td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Consumer shift to lower-carbon diets</td><td>Market</td><td>Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Reputational risk from Scope 3 progress</td><td>Reputation</td><td>Short</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Technology costs for industrial heat</td><td>Technology</td><td>Medium</td>
+            <td style="color:var(--text-muted);">Low</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Scenario Analysis</div>
+      <div class="detail-val">Conducted (aligned with TCFD)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scenarios Used</div>
+      <div class="detail-val muted">Not fully disclosed publicly</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Resilience Assessment</div>
+      <div class="detail-val">Partial — focused on supply chain diversification</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Adaptation Measures</div>
+      <div class="detail-val">Climate-smart agriculture, supply chain mapping (satellite)</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Gap Assessment</div>
+    <p>Mars' risk disclosures are strong on physical risk identification in agricultural supply chains but lack quantified financial impact estimates for most risks. Scenario analysis details (which scenarios, temperature pathways, time horizons) are not fully disclosed in public reports. Under ESRS E1-2 and E1-3, Mars would need to provide more granular scenario assumptions and quantified resilience assessments.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars SIG Report 2024 · Mars CDP Climate Change Response (C2 sections) · Mars Climate Action Position Statement · EUDR compliance disclosures
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 6: CARBON CREDITS & OFFSETS (ESRS E1-7)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="credits">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-7 · CDP C11</div>
+      <div class="section-title">Carbon Credits, Offsets & Removals</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Mars takes a <strong>"reductions first" approach</strong> consistent with ESRS requirements — all GHG targets are gross absolute targets with no credit netting. In 2024, Mars began accounting for <strong>land-based carbon removals</strong> (~42,000 tCO₂e) generated through climate-smart agriculture projects within its own supply chain, with 50% placed in a buffer pool to guard against reversal risk.</p>
+    <p>Notably, Mars <strong>discontinued carbon-neutral product claims</strong> in 2024 (Mars Bars in UK/Ireland/Canada and Royal Canin kitten/puppy products) after consumer demand failed to materialize, calling the program "not self-funding."</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Credits Used for Targets</div>
+      <div class="card-value small" style="color: var(--green);">None</div>
+      <div class="card-unit">Gross targets — no credit netting</div>
+    </div>
+    <div class="card">
+      <div class="card-label">In-Chain Removals (2024)</div>
+      <div class="card-value small">42k</div>
+      <div class="card-unit">tCO₂e from land-based removals</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Buffer Pool</div>
+      <div class="card-value small">50%</div>
+      <div class="card-unit">of removals held as reversal insurance</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Potential by 2030</div>
+      <div class="card-value small">1–2M</div>
+      <div class="card-unit">tCO₂e annually from land-based removals</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Carbon Neutral Claims</div>
+      <div class="detail-val">Discontinued in 2024 (UK Mars Bars, Royal Canin)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Reason for Discontinuation</div>
+      <div class="detail-val muted">"Not self-funding" — consumer demand did not materialize</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Removal Type</div>
+      <div class="detail-val">Land-based (regenerative agriculture, agroforestry)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Removal Verification</div>
+      <div class="detail-val muted">Methodology not fully disclosed</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars SIG Report 2024 · Trellis Group analysis (July 2025) · Mars Net Zero Roadmap
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7: FINANCIAL EFFECTS (ESRS E1-9, E1-11)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="financial">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-9 · E1-11 · CDP C3.4</div>
+      <div class="section-title">Anticipated Financial Effects</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>As a private company, Mars' financial disclosures are more limited than publicly traded peers. However, the company has provided significant signals on the <strong>financial integration of climate strategy</strong> into business planning.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Climate CapEx (2023–2025)</div>
+      <div class="card-value">$2.7B</div>
+      <div class="card-unit">Budgeted for SIG Plan</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Sustainability Fund</div>
+      <div class="card-value small">$250M</div>
+      <div class="card-unit">Mars Sustainability Investment Fund</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Dairy Decarbonization</div>
+      <div class="card-value small">$47M</div>
+      <div class="card-unit">Moo'ving Dairy Forward (3 years)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Internal Carbon Price</div>
+      <div class="card-value small">Yes</div>
+      <div class="card-unit">Applied to CapEx & R&D decisions</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Financial Risk Quantification</div>
+      <div class="detail-val muted">Not publicly quantified (private company)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Revenue at Risk from Climate</div>
+      <div class="detail-val muted">Not disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Assets at Risk</div>
+      <div class="detail-val muted">Not disclosed (manufacturing + supply chain exposure noted)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate Opportunities</div>
+      <div class="detail-val">Plant-based products, regenerative sourcing, efficiency gains</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">CSRD Readiness Gap</div>
+    <p>ESRS E1-9 and E1-11 require quantified financial effects from physical and transition risks, reconciled to financial statements. Mars currently provides directional investment figures but not the granular risk quantification or asset-level exposure analysis that CSRD demands. This is the most significant disclosure gap relative to ESRS requirements — though it is common across the sector.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars SIG Report 2024 · Mars Net Zero Roadmap · Mars press releases on investment commitments
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 8: GOVERNANCE & ACCOUNTABILITY (ESRS 2 GOV)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="governance">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS 2 GOV · CDP C1</div>
+      <div class="section-title">Governance & Accountability</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Mars has embedded climate governance deeply into its organizational structure. In 2024, the company created a dedicated <strong>Chief Climate Officer</strong> role (Kevin Rabinovitch, 30-year Mars veteran), alongside the Chief Sustainability Officer (Alastair Child). Climate targets are integrated into the company's "Compass" management system, which weights sustainability metrics alongside traditional business performance.</p>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Board Oversight</div>
+      <div class="detail-val green">Board-level sustainability committee</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Chief Climate Officer</div>
+      <div class="detail-val green">Kevin Rabinovitch (VP Sustainability & CCO)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Chief Sustainability Officer</div>
+      <div class="detail-val">Alastair Child</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Executive Compensation</div>
+      <div class="detail-val green">~2,000 leaders with LTI tied to GHG targets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Compensation Weight</div>
+      <div class="detail-val">20% of long-term incentives for top 400 managers</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate in Strategy</div>
+      <div class="detail-val">Mars "Compass" integrates sustainability + business metrics</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Acquisition Screening</div>
+      <div class="detail-val">Climate impact assessed for all M&A targets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CDP Reporting</div>
+      <div class="detail-val">Annual since 2009</div>
+    </div>
+  </div>
+
+  <!-- Peer comparison: governance -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Climate Governance Maturity</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Company</th><th>Board Oversight</th><th>Exec Comp Link</th><th>Dedicated Climate Role</th><th>CDP Score</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="highlight">Mars</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--green);">Yes (2,000 leaders)</td>
+            <td style="color:var(--green);">Chief Climate Officer</td>
+            <td>A-</td>
+          </tr>
+          <tr>
+            <td>Kellanova</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td>VP Sustainability</td>
+            <td>B</td>
+          </tr>
+          <tr>
+            <td>Hain Celestial</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td>Sustainability team</td>
+            <td>C</td>
+          </tr>
+          <tr>
+            <td>Herbalife</td>
+            <td style="color:var(--text-dim);">Limited</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td style="color:var(--text-dim);">—</td>
+          </tr>
+          <tr>
+            <td>BellRing Brands</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td>Sustainability team</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Mars SIG Report 2024 · Trellis Group profile (Jan 2025) · Smart Energy Decisions (July 2025) · Company sustainability reports
+  </div>
+</div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="page-footer">
+  <p><strong style="color:var(--text-muted);">Data Compilation Notes</strong></p>
+  <p>This climate strategy profile was compiled from publicly available sources including Mars Sustainable in a Generation Reports (2017–2024), CDP Climate Change questionnaire responses, Mars Net Zero Roadmap (2023), Mars Climate Action Position Statement, DitchCarbon analysis, New Climate Institute Corporate Climate Responsibility Monitor, press releases, and third-party analysis from Trellis Group, edie, and Sustainability Magazine.</p>
+  <p>Mars emissions data for 2015–2023 uses reported figures. 2024 estimates based on reported 16.4% reduction and $55B revenue. Scope 3 category breakdown is estimated based on Mars' stated ~60% agriculture share. All figures in thousand tonnes CO₂e unless noted. Mars baseline was restated in 2024 to include acquisitions (+~2M tonnes).</p>
+  <p>Template structure aligned with ESRS E1 Disclosure Requirements (E1-1 through E1-11) cross-referenced with CDP Climate Change questionnaire sections. Peer comparison data sourced from respective company sustainability reports and CDP disclosures.</p>
+  <p style="margin-top:12px;">Compiled: February 2026 · Framework: ESRS E1 + CDP Climate Change · For benchmarking purposes only</p>
+</footer>
+
+</div><!-- /page-container -->
+
+<!-- Section nav active state script -->
+<script>
+  const navLinks = document.querySelectorAll('.section-nav a');
+  const sections = document.querySelectorAll('.section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.section-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
