@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hain Celestial — Climate Strategy Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090C;
+    --surface: #0D1117;
+    --surface2: #131920;
+    --border: #1B2430;
+    --border-accent: #2A3A4E;
+    --text: #D1D5DB;
+    --text-muted: #6B7280;
+    --text-dim: #3E4854;
+    --heading: #F0F2F5;
+    --accent: #E8720C;
+    --accent-dim: #7A3D06;
+    --green: #22C55E;
+    --green-dim: #14532D;
+    --yellow: #EAB308;
+    --yellow-dim: #713F12;
+    --red: #EF4444;
+    --red-dim: #7F1D1D;
+    --blue: #3B82F6;
+    --blue-dim: #1E3A5F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .topbar { position: sticky; top: 0; z-index: 100; background: rgba(7,9,12,0.88); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; align-items: center; gap: 16px; }
+  .topbar .back-link { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); text-decoration: none; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+  .topbar .back-link:hover { text-decoration: underline; }
+  .topbar .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px; }
+
+  .hero { padding: 64px 32px 48px; max-width: 1100px; margin: 0 auto; border-bottom: 1px solid var(--border); }
+  .hero-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .hero h1 { font-family: 'Anybody', sans-serif; font-size: 42px; font-weight: 700; color: var(--heading); letter-spacing: -1px; line-height: 1.15; margin-bottom: 8px; }
+  .hero-sub { font-size: 16px; color: var(--text-muted); margin-bottom: 24px; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 24px; }
+  .meta-chip { font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 6px 14px; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); }
+  .meta-chip strong { color: var(--text); font-weight: 500; }
+  .meta-chip.status-good { border-color: var(--green-dim); }
+  .meta-chip.status-good strong { color: var(--green); }
+  .meta-chip.status-warn { border-color: var(--yellow-dim); }
+  .meta-chip.status-warn strong { color: var(--yellow); }
+
+  .page-container { max-width: 1100px; margin: 0 auto; padding: 0 32px 80px; }
+
+  .section-nav { position: sticky; top: 49px; z-index: 90; background: rgba(7,9,12,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0; margin-bottom: 40px; overflow-x: auto; white-space: nowrap; -ms-overflow-style: none; scrollbar-width: none; }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .section-nav a { display: inline-block; padding: 14px 18px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.5px; color: var(--text-dim); text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .section-nav a:hover { color: var(--text-muted); }
+  .section-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .section { margin-bottom: 56px; scroll-margin-top: 120px; }
+  .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-num { font-family: 'Anybody', sans-serif; font-size: 28px; font-weight: 300; color: var(--text-dim); min-width: 40px; }
+  .section-title-group { flex: 1; }
+  .section-esrs { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--accent-dim); text-transform: uppercase; margin-bottom: 2px; }
+  .section-title { font-family: 'Anybody', sans-serif; font-size: 20px; font-weight: 600; color: var(--heading); letter-spacing: -0.3px; }
+
+  .maturity { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 5px 12px; border-radius: 4px; text-transform: uppercase; font-weight: 500; white-space: nowrap; }
+  .maturity.comprehensive { background: var(--green-dim); color: var(--green); }
+  .maturity.partial { background: var(--yellow-dim); color: var(--yellow); }
+  .maturity.not-disclosed { background: var(--red-dim); color: var(--red); }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .card-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+  .card-value { font-family: 'Anybody', sans-serif; font-size: 32px; font-weight: 600; color: var(--heading); line-height: 1.1; margin-bottom: 4px; }
+  .card-value.small { font-size: 22px; }
+  .card-unit { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .card-delta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; margin-top: 8px; }
+  .card-delta.positive { color: var(--green); }
+  .card-delta.negative { color: var(--red); }
+
+  .prose { max-width: 760px; margin-bottom: 24px; }
+  .prose p { margin-bottom: 14px; color: var(--text); }
+  .prose strong { color: var(--heading); font-weight: 600; }
+  .prose em { color: var(--text-muted); }
+
+  .data-table-wrap { overflow-x: auto; margin-bottom: 24px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .data-table { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .data-table th { text-align: left; padding: 12px 16px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 500; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .data-table th:first-child { border-radius: 10px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 10px 0 0; }
+  .data-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(232,114,12,0.03); }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table .highlight { color: var(--accent); font-weight: 500; }
+
+  .chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 24px; }
+  .chart-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 16px; }
+
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .bar-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); min-width: 100px; text-align: right; }
+  .bar-track { flex: 1; height: 20px; background: var(--surface2); border-radius: 4px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+  .bar-value { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text); min-width: 80px; }
+
+  .timeline { padding-left: 24px; position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+  .timeline-item { position: relative; padding: 0 0 28px 28px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot { position: absolute; left: -20px; top: 6px; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); }
+  .timeline-dot.done { background: var(--accent); border-color: var(--accent); }
+  .timeline-dot.current { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.4); }
+  .timeline-year { font-family: 'Anybody', sans-serif; font-size: 16px; font-weight: 600; color: var(--heading); margin-bottom: 4px; }
+  .timeline-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); margin-bottom: 24px; }
+  .detail-row { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .detail-row:nth-last-child(-n+2) { border-bottom: none; }
+  .detail-key { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
+  .detail-val { font-size: 14px; color: var(--heading); font-weight: 400; }
+  .detail-val.accent { color: var(--accent); }
+  .detail-val.green { color: var(--green); }
+  .detail-val.muted { color: var(--text-muted); font-style: italic; }
+
+  .source-note { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); padding: 12px 16px; background: var(--surface2); border-radius: 6px; margin-top: 16px; line-height: 1.6; }
+  .source-note a { color: var(--accent-dim); }
+
+  .callout { border-left: 3px solid var(--accent); background: rgba(232,114,12,0.04); padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px; }
+  .callout p { font-size: 13px; color: var(--text); line-height: 1.7; }
+  .callout-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; font-weight: 500; }
+
+  .peer-bar-wrap { margin-bottom: 24px; }
+  .peer-bar-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .peer-bar-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); min-width: 110px; text-align: right; }
+  .peer-bar-name.current { color: var(--accent); font-weight: 500; }
+  .peer-bar-track { flex: 1; height: 10px; background: var(--surface2); border-radius: 3px; overflow: hidden; max-width: 320px; }
+  .peer-bar-fill { height: 100%; border-radius: 3px; background: var(--border-accent); }
+  .peer-bar-fill.current { background: var(--accent); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  .page-footer { border-top: 1px solid var(--border); padding: 32px 0; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <a href="index.html" class="back-link">← Back to Benchmark</a>
+  <span class="breadcrumb">/ Climate Benchmark / Hain Celestial</span>
+</nav>
+
+<header class="hero">
+  <div class="hero-label">Company Climate Strategy Deep Dive</div>
+  <h1>The Hain Celestial Group</h1>
+  <p class="hero-sub">$1.74B revenue (FY2024) · Public (NASDAQ: HAIN) · Hoboken, NJ · 70+ countries · Health & wellness foods</p>
+  <div class="hero-meta">
+    <span class="meta-chip status-warn"><strong>SBTi Committed</strong> (not yet validated)</span>
+    <span class="meta-chip">Scope <strong>1 + 2 + 3</strong></span>
+    <span class="meta-chip status-good"><strong>100% RE by 2025</strong></span>
+    <span class="meta-chip">Baseline <strong>FY2022</strong></span>
+    <span class="meta-chip">Sustainalytics <strong>31.3 (High Risk)</strong></span>
+  </div>
+</header>
+
+<div class="page-container">
+<nav class="section-nav">
+  <a href="#transition" class="active">Transition Plan</a>
+  <a href="#emissions">Emissions</a>
+  <a href="#targets">Targets</a>
+  <a href="#energy">Energy</a>
+  <a href="#risk">Risk & Resilience</a>
+  <a href="#credits">Carbon Credits</a>
+  <a href="#financial">Financial Effects</a>
+  <a href="#governance">Governance</a>
+</nav>
+
+<!-- SECTION 1: TRANSITION PLAN -->
+<div class="section" id="transition">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-1 · CDP C3</div>
+      <div class="section-title">Transition Plan for Climate Change Mitigation</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Hain Celestial's climate transition plan operates under the company's <strong>Global Impact Strategy</strong>, structured around three pillars: Healthier Planet, Healthier Products, and Healthier People. Following a <strong>2022 shareholder proposal</strong> from Green Century and Clean Yield Asset Management, Hain committed to setting science-based greenhouse gas reduction targets covering its entire global footprint.</p>
+    <p>The company committed to the <strong>SBTi by end of 2023</strong>, establishing a FY2022 baseline with targets to reduce Scope 1&2 emissions by 42% and Scope 3 emissions by 25% by FY2030. Scope 3 represents approximately <strong>91% of total emissions</strong>, making supply chain engagement the critical lever for meaningful decarbonization.</p>
+    <p>The transition plan is organized around <strong>four levers</strong>: renewable energy procurement, operational efficiency (including the landmark Histon biogas facility), sustainable packaging, and supply chain decarbonization through ingredient sourcing and logistics optimization.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Net Zero Target</div>
+      <div class="card-value small" style="color: var(--yellow);">TBD</div>
+      <div class="card-unit">Not yet formally set (SBTi pending)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 1&2 Interim</div>
+      <div class="card-value">−42%</div>
+      <div class="card-unit">Absolute by FY2030 vs. FY2022</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 Interim</div>
+      <div class="card-value">−25%</div>
+      <div class="card-unit">Absolute by FY2030 vs. FY2022</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 Share</div>
+      <div class="card-value small">~91%</div>
+      <div class="card-unit">of total footprint</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Key Decarbonization Levers</div>
+    <div class="bar-row">
+      <span class="bar-label">Supply Chain</span>
+      <div class="bar-track"><div class="bar-fill" style="width:55%; background: var(--accent);"></div></div>
+      <span class="bar-value">~91% of footprint (Scope 3)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Energy</span>
+      <div class="bar-track"><div class="bar-fill" style="width:20%; background: var(--blue);"></div></div>
+      <span class="bar-value">100% RE target by 2025</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Operations</span>
+      <div class="bar-track"><div class="bar-fill" style="width:12%; background: var(--green);"></div></div>
+      <span class="bar-value">Biogas, efficiency, ISO 14001</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Packaging</span>
+      <div class="bar-track"><div class="bar-fill" style="width:8%; background: var(--yellow);"></div></div>
+      <span class="bar-value">Reduction & recyclability</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Waste</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">90% food waste diversion</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">CapEx Aligned to Climate</div>
+      <div class="detail-val muted">Not specifically disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Internal Carbon Price</div>
+      <div class="detail-val muted">Not disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Shareholder Catalyst</div>
+      <div class="detail-val accent">Green Century / Clean Yield shareholder proposal (2022)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Taxonomy Alignment</div>
+      <div class="detail-val muted">Not reported</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Analyst Assessment</div>
+    <p>Hain Celestial's transition plan is credible in ambition — the 42% Scope 1&2 and 25% Scope 3 targets are consistent with a well-below-2°C pathway. However, the plan lacks detailed implementation milestones and quantified CapEx allocation. The 91% Scope 3 share means that achieving the 25% reduction target requires deep supply chain transformation, which Hain has limited leverage over as a mid-cap company ($1.74B revenue). The Sustainalytics ESG Risk Rating of 31.3 (High Risk) reflects both the ambition gap and execution uncertainty.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Hain Celestial 2023 Impact Report · Hain Celestial Climate Action Page · Green Century shareholder proposal disclosure (2022) · SBTi Target Dashboard
+  </div>
+</div>
+
+<!-- SECTION 2: GHG EMISSIONS PROFILE -->
+<div class="section" id="emissions">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-6 · CDP C6 · CDP C7</div>
+      <div class="section-title">GHG Emissions Profile</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Hain Celestial reports emissions across all three scopes, with <strong>Scope 3 representing approximately 91% of the total footprint</strong>. The company's direct operations (Scope 1&2) are relatively small given that Hain is primarily a branded products company that relies on both owned manufacturing and co-manufacturing partners.</p>
+    <p>Specific absolute emissions figures in tonnes CO₂e are published in the company's ESG metrics but are not fully detailed in public summaries. The FY2022 baseline year was established alongside the SBTi commitment.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Scope 1&2 Target</div>
+      <div class="card-value small">−42%</div>
+      <div class="card-unit">by FY2030 vs. FY2022 baseline</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 Share</div>
+      <div class="card-value small">~91%</div>
+      <div class="card-unit">of total emissions footprint</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Reporting Standard</div>
+      <div class="card-value small">GHG</div>
+      <div class="card-unit">GHG Protocol Corporate Standard</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Baseline Year</div>
+      <div class="card-value small">FY2022</div>
+      <div class="card-unit">Fiscal year ended June 30, 2022</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Estimated Emissions Breakdown by Scope</div>
+    <div class="bar-row">
+      <span class="bar-label">Scope 3</span>
+      <div class="bar-track"><div class="bar-fill" style="width:91%; background: var(--accent);"></div></div>
+      <span class="bar-value">~91% of total</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Scope 1</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: var(--blue);"></div></div>
+      <span class="bar-value">~5% (direct ops)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Scope 2</span>
+      <div class="bar-track"><div class="bar-fill" style="width:4%; background: var(--green);"></div></div>
+      <span class="bar-value">~4% (purchased energy)</span>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Scope Reporting Completeness</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">S1+S2+S3 (verified)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Kellanova</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">S1+S2+S3 (verified)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Hain Celestial</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:100%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Post Holdings</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%;"></div></div>
+        <span class="bar-value" style="font-size:11px;">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">BellRing</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%;"></div></div>
+        <span class="bar-value" style="font-size:11px;">S1+S2+S3</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Herbalife</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:66%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--yellow);">S1+S2 only</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Reporting Frameworks</div>
+      <div class="detail-val">GRI, SASB, TCFD</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CDP Reporting</div>
+      <div class="detail-val">Annual disclosure (limited public score)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Third-Party Verification</div>
+      <div class="detail-val muted">Not confirmed in public disclosures</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Absolute Emissions Data</div>
+      <div class="detail-val muted">Available in ESG metrics appendix; not prominently disclosed</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Hain Celestial 2023 Impact Report · Hain Celestial ESG Metrics · Green Century shareholder analysis (91% Scope 3 figure) · Company SASB disclosures
+  </div>
+</div>
+
+<!-- SECTION 3: TARGETS & PROGRESS -->
+<div class="section" id="targets">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-4 · CDP C4</div>
+      <div class="section-title">Climate Targets & Progress</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Scope</th>
+          <th>Type</th>
+          <th>Base Year</th>
+          <th>Target Year</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>−42% Scope 1+2</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>FY2022</td>
+          <td>FY2030</td>
+          <td class="highlight">In progress</td>
+        </tr>
+        <tr>
+          <td>−25% Scope 3</td>
+          <td>3</td>
+          <td>Absolute</td>
+          <td>FY2022</td>
+          <td>FY2030</td>
+          <td>In progress</td>
+        </tr>
+        <tr>
+          <td>100% Renewable Energy</td>
+          <td>2</td>
+          <td>Procurement</td>
+          <td>—</td>
+          <td>2025</td>
+          <td style="color:var(--yellow);">Target year reached</td>
+        </tr>
+        <tr>
+          <td>90% Food Waste Diversion</td>
+          <td>Operations</td>
+          <td>Intensity</td>
+          <td>—</td>
+          <td>2025</td>
+          <td>In progress</td>
+        </tr>
+        <tr>
+          <td>Packaging Sustainability</td>
+          <td>3 (downstream)</td>
+          <td>Qualitative</td>
+          <td>—</td>
+          <td>Ongoing</td>
+          <td>New targets set (March 2024)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Decarbonization Roadmap</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2021 — ESG Framework Launch</div>
+        <div class="timeline-text">Hain publishes first comprehensive ESG report. Global Impact Strategy established with three pillars: Healthier Planet, Healthier Products, Healthier People.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2022 — Baseline & SBTi Commitment</div>
+        <div class="timeline-text">Following shareholder proposal from Green Century and Clean Yield, Hain commits to science-based targets covering full global footprint. FY2022 established as emissions baseline. Scope 3 identified as ~91% of total footprint.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2023 — Impact Report & Target Setting</div>
+        <div class="timeline-text">2023 Impact Report published with SBTi-aligned targets: −42% S1+2, −25% S3 by FY2030. 100% renewable energy target set for 2025. SASB and ESG metrics disclosed.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2024 — Biogas Innovation & Restructuring</div>
+        <div class="timeline-text">Histon UK plant biogas CHP generating 25% of site electricity. Second CHP system installed. New packaging sustainability targets announced. Company transitions to global operating model. Revenue $1.74B.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-year">FY2025 — Near-Term Milestones</div>
+        <div class="timeline-text">100% renewable energy target deadline. 90% food waste diversion target deadline. UK Carbon Reduction Plan updated (February 2025). SBTi validation pending.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">FY2030 — Interim Targets</div>
+        <div class="timeline-text">−42% Scope 1+2 · −25% Scope 3 vs. FY2022 baseline. Full SBTi-validated targets expected to be in place.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Target Type</div>
+      <div class="detail-val green">Gross absolute (SBTi-aligned)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">SBTi Status</div>
+      <div class="detail-val" style="color:var(--yellow);">Committed (not yet validated)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Pathway Alignment</div>
+      <div class="detail-val">Well-below 2°C</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Net-Zero Target</div>
+      <div class="detail-val muted">Not yet formally set (pending SBTi validation)</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Hain Celestial 2023 Impact Report · Hain Celestial Climate Commitments · Green Century / Clean Yield shareholder engagement · SBTi Target Dashboard
+  </div>
+</div>
+
+<!-- SECTION 4: ENERGY -->
+<div class="section" id="energy">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-5 · CDP C8</div>
+      <div class="section-title">Energy Consumption & Mix</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">RE Target</div>
+      <div class="card-value small">100%</div>
+      <div class="card-unit">renewable energy by 2025</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Histon Biogas</div>
+      <div class="card-value small">25%</div>
+      <div class="card-unit">of site electricity from fruit waste</div>
+    </div>
+    <div class="card">
+      <div class="card-label">ISO 14001</div>
+      <div class="card-value small" style="color:var(--green);">Yes</div>
+      <div class="card-unit">Histon UK facility certified</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Innovation</div>
+      <div class="card-value small">2nd CHP</div>
+      <div class="card-unit">Second combined heat & power unit installed</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>Hain Celestial's flagship decarbonization project is the <strong>anaerobic digestion plant at Histon, Cambridgeshire (UK)</strong>. The facility converts fruit waste from production into biogas, which powers a combined heat and power (CHP) unit generating <strong>25% of the site's electricity</strong> and providing hot water for manufacturing processes. A <strong>second CHP system</strong> was recently installed to further increase on-site renewable generation.</p>
+    <p>The Histon plant serves as a <strong>model for the company's global decarbonization strategy</strong> — demonstrating how waste-to-energy technology can simultaneously reduce emissions, cut energy costs, and divert organic waste from landfills. The facility is ISO 14001 certified.</p>
+    <p>Beyond the UK, Hain's 100% renewable energy target by 2025 requires scaling procurement across its global manufacturing network, though specific progress metrics by region have not been publicly detailed.</p>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Histon UK Plant — Energy Innovation</div>
+    <div class="bar-row">
+      <span class="bar-label">Biogas CHP</span>
+      <div class="bar-track"><div class="bar-fill" style="width:25%; background: var(--green);"></div></div>
+      <span class="bar-value">25% of site electricity</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">2nd CHP Unit</span>
+      <div class="bar-track"><div class="bar-fill" style="width:15%; background: var(--blue);"></div></div>
+      <span class="bar-value">Additional capacity (new)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Grid / Other</span>
+      <div class="bar-track"><div class="bar-fill" style="width:60%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">~60% remaining</span>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Renewable Energy Targets</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Shaklee</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% (Achieved)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">BellRing</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% by 2025</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Hain Celestial</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:100%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">100% by 2025</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Kellanova</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:80%; background: var(--blue);"></div></div>
+        <span class="bar-value" style="font-size:11px;">100% by 2030</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:59%; background: var(--border-accent);"></div></div>
+        <span class="bar-value" style="font-size:11px;">59% — Target 2040</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Hain Celestial Fruit-to-Energy press release (July 2024) · Environment+Energy Leader · Smart Energy Decisions · Hain Celestial Impact Report 2023
+  </div>
+</div>
+
+<!-- SECTION 5: CLIMATE RISK -->
+<div class="section" id="risk">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-2 · E1-3 · CDP C2</div>
+      <div class="section-title">Climate Risk Identification & Resilience</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Hain Celestial's product portfolio depends on agricultural ingredients including <strong>fruits, vegetables, grains, tea, and plant-based proteins</strong>. The company faces climate-related risks across its supply chain, though detailed scenario analysis and quantified financial impacts have not been publicly disclosed.</p>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Material Physical Risks</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Type</th><th>Time Horizon</th><th>Value Chain Impact</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Drought affecting fruit & vegetable supply</td><td>Chronic</td><td>Medium-Long</td><td>Upstream (Global)</td><td style="color:var(--red);">High</td></tr>
+          <tr><td>Extreme weather disrupting tea production</td><td>Acute/Chronic</td><td>Medium</td><td>Upstream (Asia/Africa)</td><td style="color:var(--yellow);">Medium</td></tr>
+          <tr><td>Water stress at manufacturing facilities</td><td>Chronic</td><td>Medium</td><td>Own operations</td><td style="color:var(--yellow);">Medium</td></tr>
+          <tr><td>Flooding/storms at distribution centers</td><td>Acute</td><td>Short</td><td>Distribution</td><td style="color:var(--yellow);">Medium</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Material Transition Risks</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Category</th><th>Time Horizon</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Packaging regulations (single-use plastics)</td><td>Policy & Legal</td><td>Short</td><td style="color:var(--red);">High</td></tr>
+          <tr><td>Carbon pricing on Scope 3 supply chain</td><td>Policy & Legal</td><td>Medium</td><td style="color:var(--yellow);">Medium</td></tr>
+          <tr><td>Consumer demand for verified sustainability claims</td><td>Market</td><td>Short-Medium</td><td style="color:var(--yellow);">Medium</td></tr>
+          <tr><td>Reputational risk from ESG rating (31.3 High Risk)</td><td>Reputation</td><td>Short</td><td style="color:var(--yellow);">Medium</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row"><div class="detail-key">Scenario Analysis</div><div class="detail-val muted">Not publicly disclosed</div></div>
+    <div class="detail-row"><div class="detail-key">TCFD Alignment</div><div class="detail-val">Partial — qualitative risk discussion in 10-K and Impact Report</div></div>
+    <div class="detail-row"><div class="detail-key">Adaptation Measures</div><div class="detail-val">Supplier diversification; sustainable sourcing programs; RSPO membership</div></div>
+    <div class="detail-row"><div class="detail-key">Resilience Assessment</div><div class="detail-val muted">Not publicly available</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Gap Assessment</div>
+    <p>Hain Celestial's climate risk disclosures are among the weakest in the peer group. No formal scenario analysis has been published, and financial impacts of physical/transition risks are not quantified. The Sustainalytics ESG Risk Rating of 31.3 (High Risk) reflects both disclosure gaps and unmanaged risk exposure. ESRS E1-2 and E1-3 would require substantial improvement in scenario analysis methodology and quantified resilience assessments.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Hain Celestial 10-K (FY2024) · Hain Celestial 2023 Impact Report · Sustainalytics ESG Risk Rating · RSPO membership profile
+  </div>
+</div>
+
+<!-- SECTION 6: CARBON CREDITS -->
+<div class="section" id="credits">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-7 · CDP C11</div>
+      <div class="section-title">Carbon Credits, Offsets & Removals</div>
+    </div>
+    <span class="maturity not-disclosed">Not Disclosed</span>
+  </div>
+
+  <div class="prose">
+    <p>Hain Celestial has <strong>not publicly disclosed</strong> any use of carbon credits, offsets, or removal strategies. The company's SBTi-aligned targets are structured as gross absolute reductions with no indication of credit netting. No internal carbon pricing mechanism has been disclosed.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-label">Credits Used</div><div class="card-value small" style="color:var(--green);">None</div><div class="card-unit">Gross targets — no credit netting</div></div>
+    <div class="card"><div class="card-label">Offset Strategy</div><div class="card-value small" style="color:var(--text-dim);">N/A</div><div class="card-unit">No offset program disclosed</div></div>
+    <div class="card"><div class="card-label">Internal Carbon Price</div><div class="card-value small" style="color:var(--text-dim);">N/A</div><div class="card-unit">Not disclosed</div></div>
+    <div class="card"><div class="card-label">Removal Strategy</div><div class="card-value small" style="color:var(--text-dim);">N/A</div><div class="card-unit">No removal program disclosed</div></div>
+  </div>
+
+  <div class="source-note">Sources: Hain Celestial 2023 Impact Report · SBTi Target Dashboard</div>
+</div>
+
+<!-- SECTION 7: FINANCIAL EFFECTS -->
+<div class="section" id="financial">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-9 · E1-11 · CDP C3.4</div>
+      <div class="section-title">Anticipated Financial Effects</div>
+    </div>
+    <span class="maturity not-disclosed">Not Disclosed</span>
+  </div>
+
+  <div class="prose">
+    <p>Hain Celestial does not provide quantified financial estimates for climate-related risks or opportunities. The company's 10-K filings acknowledge climate as a risk factor qualitatively but do not estimate revenue at risk, asset impairment, or stranded asset exposure. Climate-related CapEx is not separately disclosed.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-label">Revenue (FY2024)</div><div class="card-value small">$1.74B</div><div class="card-unit">Net sales (down 3% YoY)</div></div>
+    <div class="card"><div class="card-label">Net Income (FY2024)</div><div class="card-value small" style="color:var(--red);">−$75M</div><div class="card-unit">Net loss</div></div>
+    <div class="card"><div class="card-label">Climate CapEx</div><div class="card-value small" style="color:var(--text-dim);">N/D</div><div class="card-unit">Not separately disclosed</div></div>
+    <div class="card"><div class="card-label">Restructuring</div><div class="card-value small" style="color:var(--yellow);">Active</div><div class="card-unit">Transition to global operating model</div></div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row"><div class="detail-key">Financial Risk Quantification</div><div class="detail-val muted">Not disclosed</div></div>
+    <div class="detail-row"><div class="detail-key">Revenue at Risk</div><div class="detail-val muted">Not quantified (qualitative acknowledgment in 10-K)</div></div>
+    <div class="detail-row"><div class="detail-key">Climate Opportunities</div><div class="detail-val">Organic & plant-based product demand; sustainable packaging innovation; waste-to-energy cost savings</div></div>
+    <div class="detail-row"><div class="detail-key">Financial Context</div><div class="detail-val accent">Company undergoing restructuring; net loss of $75M in FY2024 limits climate investment capacity</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">CSRD Readiness Gap</div>
+    <p>Hain Celestial's financial climate disclosures are the weakest area relative to ESRS requirements. ESRS E1-9 and E1-11 require quantified financial effects reconciled to financial statements. The company's ongoing restructuring and net losses further complicate climate investment planning. As a public US company with European operations, Hain may fall within CSRD scope and would need to substantially enhance these disclosures.</p>
+  </div>
+
+  <div class="source-note">Sources: Hain Celestial FY2024 10-K · Hain Celestial FY2024 earnings release · SEC filings</div>
+</div>
+
+<!-- SECTION 8: GOVERNANCE -->
+<div class="section" id="governance">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS 2 GOV · CDP C1</div>
+      <div class="section-title">Governance & Accountability</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Hain Celestial's sustainability governance includes a <strong>Global Head of Impact</strong> and a <strong>Sustainability Lead</strong> responsible for executing the Global Impact Strategy. Board-level oversight is provided through the relevant committee structure, though the specific committee responsible for climate is not prominently disclosed.</p>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row"><div class="detail-key">Board Oversight</div><div class="detail-val" style="color:var(--yellow);">Partial — committee structure referenced but not detailed</div></div>
+    <div class="detail-row"><div class="detail-key">Sustainability Leadership</div><div class="detail-val">Global Head of Impact + Sustainability Lead</div></div>
+    <div class="detail-row"><div class="detail-key">Executive Compensation</div><div class="detail-val muted">Climate link to compensation not disclosed</div></div>
+    <div class="detail-row"><div class="detail-key">CDP Reporting</div><div class="detail-val">Annual disclosure</div></div>
+    <div class="detail-row"><div class="detail-key">Reporting Frameworks</div><div class="detail-val">GRI, SASB, TCFD (partial alignment)</div></div>
+    <div class="detail-row"><div class="detail-key">Supplier Code of Conduct</div><div class="detail-val green">Updated 2024 — includes environmental requirements</div></div>
+    <div class="detail-row"><div class="detail-key">UK Carbon Reduction Plan</div><div class="detail-val green">Published and updated February 2025 (PPN-0621)</div></div>
+    <div class="detail-row"><div class="detail-key">Modern Slavery Statement</div><div class="detail-val">2024 statement published</div></div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Climate Governance Maturity</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead><tr><th>Company</th><th>Board Oversight</th><th>Exec Comp Link</th><th>Dedicated Climate Role</th><th>CDP</th></tr></thead>
+        <tbody>
+          <tr><td>Mars</td><td style="color:var(--green);">Yes</td><td style="color:var(--green);">Yes (2,000 leaders)</td><td style="color:var(--green);">Chief Climate Officer</td><td>A-</td></tr>
+          <tr><td>Kellanova</td><td style="color:var(--green);">Yes</td><td style="color:var(--text-dim);">Not disclosed</td><td>VP Sustainability</td><td>Reported</td></tr>
+          <tr><td class="highlight">Hain Celestial</td><td style="color:var(--yellow);">Partial</td><td style="color:var(--text-dim);">Not disclosed</td><td>Global Head of Impact</td><td>Reported</td></tr>
+          <tr><td>Post Holdings</td><td style="color:var(--yellow);">Partial</td><td style="color:var(--text-dim);">Not disclosed</td><td>Sustainability team</td><td>B</td></tr>
+          <tr><td>BellRing Brands</td><td style="color:var(--yellow);">Partial</td><td style="color:var(--text-dim);">Not disclosed</td><td>Sustainability team</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="source-note">Sources: Hain Celestial Investor Relations (ESG Governance) · Hain Celestial Policies page · 2023 Impact Report · Company sustainability reports for peer data</div>
+</div>
+
+<footer class="page-footer">
+  <p><strong style="color:var(--text-muted);">Data Compilation Notes</strong></p>
+  <p>This climate strategy profile was compiled from publicly available sources including Hain Celestial 2023 Impact Report, ESG metrics disclosures, SASB data, 10-K filings (FY2023–FY2024), Green Century/Clean Yield shareholder proposal analysis, Hain Celestial fruit-to-energy press releases, Environment+Energy Leader and Smart Energy Decisions coverage, Sustainalytics ESG Risk Rating, and RSPO membership profile.</p>
+  <p>Scope breakdown percentages (~91% Scope 3) are from Green Century's shareholder proposal analysis. Absolute emissions figures in tonnes CO₂e are available in Hain's ESG metrics appendix but are not prominently disclosed in summary reports. The Histon biogas data is from Hain Celestial's July 2024 press release and third-party reporting.</p>
+  <p style="margin-top:12px;">Compiled: February 2026 · Framework: ESRS E1 + CDP Climate Change · For benchmarking purposes only</p>
+</footer>
+
+</div>
+
+<script>
+  const navLinks = document.querySelectorAll('.section-nav a');
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.section-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

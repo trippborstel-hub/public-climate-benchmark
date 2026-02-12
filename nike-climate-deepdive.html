@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nike, Inc. — Climate Strategy Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090C;
+    --surface: #0D1117;
+    --surface2: #131920;
+    --border: #1B2430;
+    --border-accent: #2A3A4E;
+    --text: #D1D5DB;
+    --text-muted: #6B7280;
+    --text-dim: #3E4854;
+    --heading: #F0F2F5;
+    --accent: #E8720C;
+    --accent-dim: #7A3D06;
+    --green: #22C55E;
+    --green-dim: #14532D;
+    --yellow: #EAB308;
+    --yellow-dim: #713F12;
+    --red: #EF4444;
+    --red-dim: #7F1D1D;
+    --blue: #3B82F6;
+    --blue-dim: #1E3A5F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV BAR ─────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,9,12,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar .back-link {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--accent); text-decoration: none; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar .back-link:hover { text-decoration: underline; }
+  .topbar .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.5px;
+  }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .hero {
+    padding: 64px 32px 48px;
+    max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Anybody', sans-serif; font-size: 42px;
+    font-weight: 700; color: var(--heading); letter-spacing: -1px;
+    line-height: 1.15; margin-bottom: 8px;
+  }
+  .hero-sub {
+    font-size: 16px; color: var(--text-muted); margin-bottom: 24px;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 24px;
+  }
+  .meta-chip {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 6px 14px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .meta-chip strong { color: var(--text); font-weight: 500; }
+  .meta-chip.status-good { border-color: var(--green-dim); }
+  .meta-chip.status-good strong { color: var(--green); }
+  .meta-chip.status-warn { border-color: var(--yellow-dim); }
+  .meta-chip.status-warn strong { color: var(--yellow); }
+  .meta-chip.status-bad { border-color: var(--red-dim); }
+  .meta-chip.status-bad strong { color: var(--red); }
+
+  /* ── LAYOUT ──────────────────────────────────── */
+  .page-container {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px 80px;
+  }
+
+  /* Anchor nav */
+  .section-nav {
+    position: sticky; top: 49px; z-index: 90;
+    background: rgba(7,9,12,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0; margin-bottom: 40px;
+    overflow-x: auto; white-space: nowrap;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .section-nav a {
+    display: inline-block; padding: 14px 18px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.5px; color: var(--text-dim);
+    text-decoration: none; border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .section-nav a:hover { color: var(--text-muted); }
+  .section-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Section blocks */
+  .section {
+    margin-bottom: 56px; scroll-margin-top: 120px;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'Anybody', sans-serif; font-size: 28px;
+    font-weight: 300; color: var(--text-dim);
+    min-width: 40px;
+  }
+  .section-title-group { flex: 1; }
+  .section-esrs {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; color: var(--accent-dim);
+    text-transform: uppercase; margin-bottom: 2px;
+  }
+  .section-title {
+    font-family: 'Anybody', sans-serif; font-size: 20px;
+    font-weight: 600; color: var(--heading); letter-spacing: -0.3px;
+  }
+
+  /* Maturity badge */
+  .maturity {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; padding: 5px 12px;
+    border-radius: 4px; text-transform: uppercase; font-weight: 500;
+    white-space: nowrap;
+  }
+  .maturity.comprehensive { background: var(--green-dim); color: var(--green); }
+  .maturity.partial { background: var(--yellow-dim); color: var(--yellow); }
+  .maturity.not-disclosed { background: var(--red-dim); color: var(--red); }
+
+  /* Data cards */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'Anybody', sans-serif; font-size: 32px;
+    font-weight: 600; color: var(--heading); line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .card-value.small { font-size: 22px; }
+  .card-unit {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted);
+  }
+  .card-delta {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    margin-top: 8px;
+  }
+  .card-delta.positive { color: var(--green); }
+  .card-delta.negative { color: var(--red); }
+
+  /* Prose blocks */
+  .prose { max-width: 760px; margin-bottom: 24px; }
+  .prose p { margin-bottom: 14px; color: var(--text); }
+  .prose strong { color: var(--heading); font-weight: 600; }
+  .prose em { color: var(--text-muted); }
+
+  /* Data table */
+  .data-table-wrap {
+    overflow-x: auto; margin-bottom: 24px;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .data-table th {
+    text-align: left; padding: 12px 16px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .data-table th:first-child { border-radius: 10px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 10px 0 0; }
+  .data-table td {
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(232,114,12,0.03); }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table .highlight { color: var(--accent); font-weight: 500; }
+
+  /* SVG chart container */
+  .chart-container {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px; margin-bottom: 24px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 1px; color: var(--text-muted);
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+
+  /* Bar chart */
+  .bar-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .bar-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 72px; text-align: right;
+  }
+  .bar-track {
+    flex: 1; height: 20px; background: var(--surface2);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text); min-width: 80px;
+  }
+
+  /* Roadmap / Timeline */
+  .timeline { padding-left: 24px; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 8px;
+    bottom: 8px; width: 1px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; padding: 0 0 28px 28px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -20px; top: 6px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+  }
+  .timeline-dot.done { background: var(--accent); border-color: var(--accent); }
+  .timeline-dot.current { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.4); }
+  .timeline-year {
+    font-family: 'Anybody', sans-serif; font-size: 16px;
+    font-weight: 600; color: var(--heading); margin-bottom: 4px;
+  }
+  .timeline-text {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+  }
+
+  /* Key-value detail rows */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; background: var(--surface);
+    margin-bottom: 24px;
+  }
+  .detail-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:nth-last-child(-n+2) { border-bottom: none; }
+  .detail-key {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 4px;
+  }
+  .detail-val {
+    font-size: 14px; color: var(--heading); font-weight: 400;
+  }
+  .detail-val.accent { color: var(--accent); }
+  .detail-val.green { color: var(--green); }
+  .detail-val.muted { color: var(--text-muted); font-style: italic; }
+
+  /* Source citations */
+  .source-note {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); padding: 12px 16px;
+    background: var(--surface2); border-radius: 6px;
+    margin-top: 16px; line-height: 1.6;
+  }
+  .source-note a { color: var(--accent-dim); }
+
+  /* Callout box */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(232,114,12,0.04);
+    padding: 16px 20px; border-radius: 0 8px 8px 0;
+    margin-bottom: 24px;
+  }
+  .callout p {
+    font-size: 13px; color: var(--text); line-height: 1.7;
+  }
+  .callout-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* Peer comparison mini-bar */
+  .peer-bar-wrap { margin-bottom: 24px; }
+  .peer-bar-item {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+  .peer-bar-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 110px; text-align: right;
+  }
+  .peer-bar-name.current { color: var(--accent); font-weight: 500; }
+  .peer-bar-track {
+    flex: 1; height: 10px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden; max-width: 320px;
+  }
+  .peer-bar-fill {
+    height: 100%; border-radius: 3px; background: var(--border-accent);
+  }
+  .peer-bar-fill.current { background: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  /* Footer */
+  .page-footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TOP BAR ═══════════════════════ -->
+<nav class="topbar">
+  <a href="index.html" class="back-link">← Back to Benchmark</a>
+  <span class="breadcrumb">/ Climate Benchmark / Nike</span>
+</nav>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<header class="hero">
+  <div class="hero-label">Company Climate Strategy Deep Dive</div>
+  <h1>Nike, Inc.</h1>
+  <p class="hero-sub">~$51B revenue · Public (NYSE: NKE) · Beaverton, OR · ~79,000 employees · 190+ markets</p>
+  <div class="hero-meta">
+    <span class="meta-chip status-good"><strong>SBTi Validated</strong></span>
+    <span class="meta-chip">Net Zero <strong>Not formally set</strong></span>
+    <span class="meta-chip">Scope <strong>1 + 2 + 3</strong></span>
+    <span class="meta-chip status-good">CDP Score <strong>A-</strong></span>
+    <span class="meta-chip">Baseline <strong>FY2020</strong></span>
+  </div>
+</header>
+
+<!-- ═══════════════════════ SECTION NAV ═══════════════════════ -->
+<div class="page-container">
+<nav class="section-nav">
+  <a href="#transition" class="active">Transition Plan</a>
+  <a href="#emissions">Emissions</a>
+  <a href="#targets">Targets</a>
+  <a href="#energy">Energy</a>
+  <a href="#risk">Risk & Resilience</a>
+  <a href="#credits">Carbon Credits</a>
+  <a href="#financial">Financial Effects</a>
+  <a href="#governance">Governance</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1: TRANSITION PLAN (ESRS E1-1)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="transition">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-1 · CDP C3</div>
+      <div class="section-title">Transition Plan for Climate Change Mitigation</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Nike's climate transition strategy is anchored in its <strong>Move to Zero</strong> campaign — a long-term initiative targeting zero carbon and zero waste across the company's entire value chain. The plan is backed by SBTi-validated targets aligned with a 1.5°C pathway for Scope 1 &amp; 2 emissions, with a well-below 2°C pathway for Scope 3. Nike uses a dual-baseline approach: <strong>FY2015</strong> for SBTi long-term targets and <strong>FY2020</strong> for interim 2025 operational targets.</p>
+    <p>The company's transition strategy prioritizes <strong>renewable energy procurement</strong> (96% renewable electricity achieved), <strong>sustainable materials innovation</strong> (Nike Forward, Flyknit, recycled polyester), <strong>supplier decarbonization</strong> (60%+ of production volume from suppliers with science-aligned targets), and <strong>circular design principles</strong>. Notably, Nike has not set a formal net-zero target year, distinguishing it from peers like Adidas and Puma who have committed to 2050 net zero.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Net Zero Target</div>
+      <div class="card-value small">None</div>
+      <div class="card-unit">No formal net-zero year committed</div>
+    </div>
+    <div class="card">
+      <div class="card-label">2030 Target (S1+2)</div>
+      <div class="card-value">−65%</div>
+      <div class="card-unit">Absolute GHG by 2030 vs. FY2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">2030 Target (S3)</div>
+      <div class="card-value">−30%</div>
+      <div class="card-unit">Per unit of value added vs. FY2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Move to Zero</div>
+      <div class="card-value small">Zero</div>
+      <div class="card-unit">Carbon + zero waste ambition</div>
+    </div>
+  </div>
+
+  <!-- Decarbonization Levers -->
+  <div class="chart-container">
+    <div class="chart-title">Key Decarbonization Levers (by Emissions Impact)</div>
+    <div class="bar-row">
+      <span class="bar-label">Materials</span>
+      <div class="bar-track"><div class="bar-fill" style="width:62%; background: var(--accent);"></div></div>
+      <span class="bar-value">~62% of footprint</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Manufacturing</span>
+      <div class="bar-track"><div class="bar-fill" style="width:16%; background: var(--green);"></div></div>
+      <span class="bar-value">Product + materials mfg</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Logistics</span>
+      <div class="bar-track"><div class="bar-fill" style="width:7%; background: var(--blue);"></div></div>
+      <span class="bar-value">Inbound + outbound</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Packaging</span>
+      <div class="bar-track"><div class="bar-fill" style="width:7%; background: var(--yellow);"></div></div>
+      <span class="bar-value">Packaging materials</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">End of Life</span>
+      <div class="bar-track"><div class="bar-fill" style="width:6%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">Product disposal</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Operations</span>
+      <div class="bar-track"><div class="bar-fill" style="width:2%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">HQs, DCs, retail (~2%)</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Locked-In Emissions</div>
+      <div class="detail-val muted">Not explicitly quantified in public disclosures</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate CapEx</div>
+      <div class="detail-val muted">Not separately disclosed; embedded in operational budgets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Internal Carbon Price</div>
+      <div class="detail-val muted">Not publicly disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Taxonomy Alignment</div>
+      <div class="detail-val muted">Not yet reported (U.S.-listed company)</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Analyst Assessment</div>
+    <p>Nike is a leader in operational decarbonization among apparel/footwear companies, with 96% renewable electricity and a 69% reduction in Scope 1 &amp; 2 emissions. The fundamental challenge is Scope 3: supply chain manufacturing and raw materials represent ~98% of Nike's total footprint. Achieving the 30% intensity reduction in Scope 3 by 2030 requires continued supplier engagement at scale — over 60% of production volume already comes from suppliers with science-aligned targets. The absence of a formal net-zero commitment is a notable gap versus peers.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike FY24 Impact Report · Nike Emissions Footprint (FY24) · Nike Move to Zero · SBTi Target Dashboard · CDP Climate Change Response
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2: GHG EMISSIONS PROFILE (ESRS E1-6)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="emissions">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-6 · CDP C6 · CDP C7</div>
+      <div class="section-title">GHG Emissions Profile</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Total Footprint (FY2024)</div>
+      <div class="card-value">8.3M</div>
+      <div class="card-unit">tCO₂e (Scope 1+2+3)</div>
+      <div class="card-delta positive">↓ 25% vs. FY2019 (11.0M)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 1 (FY2024)</div>
+      <div class="card-value small">36k</div>
+      <div class="card-unit">tCO₂e — direct operations</div>
+      <div class="card-delta positive">↓ 38% vs. FY2015</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 2 (FY2024)</div>
+      <div class="card-value small">229k</div>
+      <div class="card-unit">tCO₂e — location-based</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 (FY2024)</div>
+      <div class="card-value small">~8.0M</div>
+      <div class="card-unit">tCO₂e — value chain (~97% of total)</div>
+      <div class="card-delta positive">↓ 29% vs. FY2020</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>Nike's emissions profile is overwhelmingly dominated by <strong>Scope 3 supply chain emissions</strong>, which account for approximately 97% of the total footprint. Direct operations (Scope 1 &amp; 2) contribute less than 3% of total emissions, reflecting Nike's asset-light manufacturing model — Nike does not own factories; it contracts with over 500 supplier facilities globally. The 69% reduction in Scope 1 &amp; 2 (market-based) has been driven primarily by the shift to 96% renewable electricity.</p>
+  </div>
+
+  <!-- Emissions trend table -->
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fiscal Year</th>
+          <th class="num">Scope 1 (kt)</th>
+          <th class="num">Scope 2 loc (kt)</th>
+          <th class="num">Total Footprint (Mt)</th>
+          <th class="num">Revenue ($B)</th>
+          <th class="num">Intensity (kt/$B)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">FY2015 (SBT base)</td>
+          <td class="num">57</td><td class="num">12</td>
+          <td class="num">~10.6</td>
+          <td class="num">30.6</td><td class="num">~346</td>
+        </tr>
+        <tr>
+          <td>FY2019</td>
+          <td class="num">65</td><td class="num">161</td>
+          <td class="num">11.0</td>
+          <td class="num">39.1</td><td class="num">281</td>
+        </tr>
+        <tr>
+          <td class="highlight">FY2020 (ops base)</td>
+          <td class="num">47</td><td class="num">209</td>
+          <td class="num">~10.4</td>
+          <td class="num">37.4</td><td class="num">~278</td>
+        </tr>
+        <tr>
+          <td>FY2021</td>
+          <td class="num">42</td><td class="num">210</td>
+          <td class="num">~10.1</td>
+          <td class="num">44.5</td><td class="num">~227</td>
+        </tr>
+        <tr>
+          <td>FY2022</td>
+          <td class="num">40</td><td class="num">225</td>
+          <td class="num">~10.3</td>
+          <td class="num">46.7</td><td class="num">~221</td>
+        </tr>
+        <tr>
+          <td>FY2023</td>
+          <td class="num">37</td><td class="num">226</td>
+          <td class="num highlight">9.5</td>
+          <td class="num">51.2</td><td class="num">186</td>
+        </tr>
+        <tr>
+          <td class="highlight">FY2024</td>
+          <td class="num highlight">36</td><td class="num">229</td>
+          <td class="num highlight">8.3</td>
+          <td class="num">51.4</td><td class="num highlight">162</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Scope 3 Category Breakdown -->
+  <div class="chart-container">
+    <div class="chart-title">Scope 3 Emissions by Category — FY2024 Breakdown</div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">Raw Materials</span>
+      <div class="bar-track"><div class="bar-fill" style="width:34%; background: var(--accent);"></div></div>
+      <span class="bar-value">34%</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">Product Mfg</span>
+      <div class="bar-track"><div class="bar-fill" style="width:16%; background: var(--green);"></div></div>
+      <span class="bar-value">16%</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">Materials Mfg</span>
+      <div class="bar-track"><div class="bar-fill" style="width:15%; background: var(--blue);"></div></div>
+      <span class="bar-value">15%</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">Mat. Finishing</span>
+      <div class="bar-track"><div class="bar-fill" style="width:13%; background: var(--yellow);"></div></div>
+      <span class="bar-value">13%</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">Packaging</span>
+      <div class="bar-track"><div class="bar-fill" style="width:7%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">7%</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">Logistics</span>
+      <div class="bar-track"><div class="bar-fill" style="width:7%; background: #06B6D4;"></div></div>
+      <span class="bar-value">7%</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">End of Life</span>
+      <div class="bar-track"><div class="bar-fill" style="width:6%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">6%</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:110px;">Operations</span>
+      <div class="bar-track"><div class="bar-fill" style="width:2%; background: var(--border-accent);"></div></div>
+      <span class="bar-value">2%</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Reporting Standard</div>
+      <div class="detail-val">GHG Protocol Corporate Standard + Scope 3 Standard</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scope 2 Method</div>
+      <div class="detail-val">Location-based and Market-based reported</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Verification</div>
+      <div class="detail-val">External assurance on S1, S2, and select S3 metrics</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">S1+2 Reduction (Market)</div>
+      <div class="detail-val accent">−69% vs. FY2020 (owned/operated facilities)</div>
+    </div>
+  </div>
+
+  <!-- Peer Comparison -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — CDP Climate Scores</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Adidas</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">A</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Puma</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">A</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">H&amp;M Group</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:95%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">A</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Nike</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:90%"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">A-</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">VF Corp</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:90%"></div></div>
+        <span class="bar-value" style="font-size:11px;">A-</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Lululemon</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:75%"></div></div>
+        <span class="bar-value" style="font-size:11px;">B</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Under Armour</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:60%"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--yellow);">B-</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike FY24 Sustainability Data · Nike Emissions Footprint (FY24) · CDP Climate Change Scores · Tracenable · Nike SBT Footprint Reporting. Note: Scope 2 location-based shown in table; market-based Scope 2 is significantly lower due to 96% renewable electricity procurement.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3: TARGETS & PROGRESS (ESRS E1-4)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="targets">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-4 · CDP C4</div>
+      <div class="section-title">Climate Targets & Progress</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Scope</th>
+          <th>Type</th>
+          <th>Base Year</th>
+          <th>Target Year</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>−65% Scope 1+2</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>FY2015</td>
+          <td>2030</td>
+          <td class="highlight">SBTi validated (1.5°C)</td>
+        </tr>
+        <tr>
+          <td>−30% Scope 3 intensity</td>
+          <td>3</td>
+          <td>Intensity (per unit)</td>
+          <td>FY2015</td>
+          <td>2030</td>
+          <td class="highlight">SBTi validated (WB2°C)</td>
+        </tr>
+        <tr>
+          <td>−70% S1+2 (owned ops)</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>FY2020</td>
+          <td>FY2025</td>
+          <td style="color:var(--green);">69% achieved (near target)</td>
+        </tr>
+        <tr>
+          <td>S3 ≤ FY2020 levels</td>
+          <td>3</td>
+          <td>Absolute cap</td>
+          <td>FY2020</td>
+          <td>FY2025</td>
+          <td style="color:var(--green);">29% below FY2020</td>
+        </tr>
+        <tr>
+          <td>100% renewable electricity</td>
+          <td>2</td>
+          <td>RE100 commitment</td>
+          <td>—</td>
+          <td>2025</td>
+          <td>96% achieved (FY2024)</td>
+        </tr>
+        <tr>
+          <td>S3 mfg + transport −30%</td>
+          <td>3</td>
+          <td>Absolute</td>
+          <td>FY2020</td>
+          <td>FY2025</td>
+          <td style="color:var(--green);">36% achieved (exceeded)</td>
+        </tr>
+        <tr>
+          <td>Net Zero</td>
+          <td>1+2+3</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td style="color:var(--yellow);">Not formally committed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Roadmap Timeline -->
+  <div class="chart-container">
+    <div class="chart-title">Decarbonization Roadmap</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2015 — SBTi Baseline</div>
+        <div class="timeline-text">Nike establishes FY2015 as the baseline for SBTi long-term targets. Total Scope 1 emissions at 57K tCO₂e. The company begins scaling renewable energy procurement and sustainable materials innovation.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2019 — SBTi Validation</div>
+        <div class="timeline-text">Science Based Targets initiative validates Nike's near-term targets: 65% reduction in S1+2 and 30% S3 intensity reduction by 2030. Nike joins RE100, committing to 100% renewable electricity. Total footprint at 11.0M tCO₂e.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2020 — Operational Baseline Set</div>
+        <div class="timeline-text">FY2020 established as baseline for interim 2025 targets. Move to Zero campaign fully launched. Nike FY20 Impact Report published with comprehensive emissions inventory. COVID-19 disruptions temporarily reduce supply chain activity.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY2023 — Accelerating Progress</div>
+        <div class="timeline-text">Total footprint drops to 9.5M tCO₂e. 78% of Nike, Jordan, and Converse products contain recycled material. Nike Forward material platform launches with 75% lower carbon footprint than traditional fleece. 100% waste diversion at strategic supplier sites.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-year">FY2024 — Current Position</div>
+        <div class="timeline-text">Total footprint reaches 8.3M tCO₂e (↓25% vs. FY2019). 96% renewable electricity globally. 69% S1+2 reduction vs. FY2020. 36% S3 reduction in manufacturing &amp; transport. Less than 1% inbound air freight. Revenue ~$51.4B — footprint declining while revenue grows.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">FY2025 — Interim Target Year</div>
+        <div class="timeline-text">Target: 70% S1+2 reduction (owned/operated) vs. FY2020. Maintain S3 at or below FY2020 levels. Achieve 100% renewable electricity. Most FY2025 targets are on track or already exceeded.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2030 — SBTi Target Year</div>
+        <div class="timeline-text">−65% absolute Scope 1+2 vs. FY2015. −30% Scope 3 per unit of value added vs. FY2015. Continue scaling sustainable materials, supplier engagement, and circular design across all product categories.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">Beyond 2030 — Move to Zero</div>
+        <div class="timeline-text">Move to Zero campaign continues without a formally committed net-zero year. Focus on eliminating remaining operational emissions and driving Scope 3 reductions through material innovation and supply chain transformation. Net-zero commitment remains a gap versus sector peers.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Target Type</div>
+      <div class="detail-val green">Absolute (S1+2) · Intensity (S3 per unit)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">SBTi Status</div>
+      <div class="detail-val green">Near-term targets validated (FY2019)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Pathway Alignment</div>
+      <div class="detail-val">1.5°C (S1+2) · Well-below 2°C (S3)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Target Boundary</div>
+      <div class="detail-val">All owned/operated facilities + contracted supply chain</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Progress Assessment</div>
+    <p>Nike has substantially exceeded its interim FY2025 Scope 3 targets and is within 1 percentage point of its S1+2 target. The 2030 SBTi targets remain the key benchmark. The absence of a net-zero commitment is increasingly conspicuous as peers (Adidas: 2050 net zero, Puma: climate neutrality by 2050, H&amp;M: net positive by 2040) have set long-term commitments. Nike's use of an intensity metric for Scope 3 (per unit of value added) also draws scrutiny — absolute Scope 3 targets are considered more ambitious.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike FY24 Sustainability Data · SBTi Target Dashboard · Nike 2025 Targets · Nike Move to Zero · RE100
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4: ENERGY CONSUMPTION & MIX (ESRS E1-5)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="energy">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-5 · CDP C8</div>
+      <div class="section-title">Energy Consumption & Mix</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Renewable Electricity</div>
+      <div class="card-value">96%</div>
+      <div class="card-unit">of global operations (FY2024)</div>
+      <div class="card-delta positive">↑ RE100 member — targeting 100%</div>
+    </div>
+    <div class="card">
+      <div class="card-label">S1+2 Reduction</div>
+      <div class="card-value small">−69%</div>
+      <div class="card-unit">vs. FY2020 (market-based)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Air Freight</div>
+      <div class="card-value small">&lt;1%</div>
+      <div class="card-unit">Inbound air freight in FY2024</div>
+    </div>
+    <div class="card">
+      <div class="card-label">LEED Facilities</div>
+      <div class="card-value small">Yes</div>
+      <div class="card-unit">LEED-certified distribution centers</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>Nike's energy strategy is built around three pillars: <strong>renewable electricity procurement</strong> (PPAs, virtual PPAs, and direct contracts), <strong>energy efficiency</strong> improvements at headquarters, distribution centers, and retail locations, and <strong>logistics optimization</strong> to minimize transportation emissions. The 96% renewable electricity achievement — up from much lower levels just five years ago — has been the primary driver of operational decarbonization.</p>
+    <p>Nike's distribution centers are LEED-certified, and the company has reduced inbound air freight to less than 1% of total goods movement — a significant logistics decarbonization lever. Nike's owned operations represent only ~2% of total emissions, so the energy transition impact on total footprint is limited. The real energy challenge is in Nike's contracted manufacturing supply chain, where supplier energy procurement is critical.</p>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Energy Decarbonization Milestones</div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:120px;">Renewable Elec.</span>
+      <div class="bar-track"><div class="bar-fill" style="width:96%; background: var(--green);"></div></div>
+      <span class="bar-value">96% (FY2024)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:120px;">Waste Diversion</span>
+      <div class="bar-track"><div class="bar-fill" style="width:100%; background: var(--green);"></div></div>
+      <span class="bar-value">100% at strategic suppliers</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:120px;">Supplier SBTs</span>
+      <div class="bar-track"><div class="bar-fill" style="width:60%; background: var(--accent);"></div></div>
+      <span class="bar-value">60%+ production volume</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:120px;">Water Reduction</span>
+      <div class="bar-track"><div class="bar-fill" style="width:40%; background: var(--blue);"></div></div>
+      <span class="bar-value">−40% freshwater (material mfg)</span>
+    </div>
+  </div>
+
+  <!-- Peer Comparison: RE Targets -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Renewable Electricity Achievement</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">Nike</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:96%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">96% (FY2024)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Adidas</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% (own ops)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Puma</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% (own ops)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">H&amp;M Group</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:96%; background: var(--blue);"></div></div>
+        <span class="bar-value" style="font-size:11px;">96% (own ops)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">VF Corp</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:85%;"></div></div>
+        <span class="bar-value" style="font-size:11px;">~85% (own ops)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Lululemon</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:75%;"></div></div>
+        <span class="bar-value" style="font-size:11px;">~75% (own ops)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Under Armour</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:30%; background: var(--text-dim);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--text-dim);">Limited disclosure</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike FY24 Sustainability Data · RE100 Members List · Company sustainability reports for peer data · Nike Impact Report
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 5: CLIMATE RISK & RESILIENCE (ESRS E1-2, E1-3)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="risk">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-2 · E1-3 · CDP C2</div>
+      <div class="section-title">Climate Risk Identification & Resilience</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Nike acknowledges climate-related risks in its SEC filings (10-K) and sustainability reporting, referencing physical, regulatory, and market risks across its global supply chain. Nike's asset-light model — with over 500 contracted manufacturing facilities, primarily in <strong>Vietnam, China, and Indonesia</strong> — concentrates physical risk exposure in regions highly vulnerable to climate impacts. However, detailed scenario analysis assumptions and quantified financial risk assessments are not fully disclosed in public reports.</p>
+  </div>
+
+  <!-- Physical Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Physical Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Type</th><th>Time Horizon</th><th>Value Chain Impact</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Flooding at supplier factories (Vietnam, Indonesia)</td><td>Acute</td><td>Short-Medium</td>
+            <td>Upstream (Manufacturing)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Extreme heat reducing worker productivity</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Upstream (SE Asia factories)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Water scarcity in textile dyeing/finishing</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Upstream (Materials)</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Sea-level rise at coastal logistics hubs</td><td>Chronic</td><td>Long</td>
+            <td>Distribution</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Raw material disruptions (cotton, rubber)</td><td>Chronic</td><td>Medium</td>
+            <td>Upstream (Agriculture)</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transition Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Transition Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Category</th><th>Time Horizon</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Carbon pricing in manufacturing regions</td><td>Policy & Legal</td><td>Short-Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>EU CBAM / EUDR compliance costs</td><td>Policy & Legal</td><td>Short</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Consumer demand for sustainable products</td><td>Market</td><td>Short-Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Greenwashing litigation risk</td><td>Reputation</td><td>Short</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Sustainable material cost premium</td><td>Technology</td><td>Medium</td>
+            <td style="color:var(--text-muted);">Low</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Scenario Analysis</div>
+      <div class="detail-val muted">Limited public disclosure of methodology</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scenarios Used</div>
+      <div class="detail-val muted">Not fully disclosed publicly</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Resilience Assessment</div>
+      <div class="detail-val">Partial — supply chain diversification, material innovation</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Adaptation Measures</div>
+      <div class="detail-val">Supplier diversification, water stewardship, sustainable materials R&amp;D</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Gap Assessment</div>
+    <p>Nike's climate risk disclosures are directional rather than quantified. The company's 10-K acknowledges climate-related risks but does not provide detailed TCFD-aligned scenario analysis results, quantified financial impacts, or asset-level exposure assessments in public reports. Given Nike's heavy concentration of manufacturing in climate-vulnerable SE Asian countries (Vietnam alone accounts for ~50% of footwear production), more granular physical risk quantification would significantly strengthen disclosures. Under ESRS E1-2 and E1-3, Nike would need to provide explicit scenario assumptions, time-bounded financial impact estimates, and resilience assessments.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike 10-K (FY2024) · Nike FY24 Sustainability Data · Nike CDP Climate Change Response · SASB Apparel Disclosure
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 6: CARBON CREDITS & OFFSETS (ESRS E1-7)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="credits">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-7 · CDP C11</div>
+      <div class="section-title">Carbon Credits, Offsets & Removals</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>Nike's climate strategy is firmly <strong>reductions-first</strong> — the company's SBTi-validated targets are gross reduction targets with no reliance on carbon credits or offsets to meet stated goals. Nike does not make carbon-neutral product claims and has not disclosed any significant carbon offset purchasing programs. This positions Nike in line with best practice under SBTi and ESRS frameworks, which require that credits not be counted toward emission reduction targets.</p>
+    <p>However, Nike's public disclosures provide limited detail on any use of carbon credits for voluntary offsetting, internal carbon pricing mechanisms, or investments in carbon removal technologies. The company's approach appears to prioritize tangible operational changes — renewable energy, sustainable materials, supplier engagement — over market-based carbon instruments.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Credits Used for Targets</div>
+      <div class="card-value small" style="color: var(--green);">None</div>
+      <div class="card-unit">Gross targets — no credit netting</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Carbon Neutral Claims</div>
+      <div class="card-value small" style="color: var(--green);">None</div>
+      <div class="card-unit">No carbon-neutral product claims</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Internal Carbon Price</div>
+      <div class="card-value small" style="color: var(--text-muted);">N/D</div>
+      <div class="card-unit">Not publicly disclosed</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Removal Investments</div>
+      <div class="card-value small" style="color: var(--text-muted);">N/D</div>
+      <div class="card-unit">Not publicly disclosed</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Offset Purchasing</div>
+      <div class="detail-val muted">Not publicly disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Carbon Removal Investment</div>
+      <div class="detail-val muted">Not publicly disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Credit Quality Standards</div>
+      <div class="detail-val muted">Not publicly disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Reductions-First Approach</div>
+      <div class="detail-val green">Yes — all targets are gross reductions</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Analyst Note</div>
+    <p>Nike's reductions-first approach is commendable and aligned with best practice. However, the lack of any disclosed carbon removal strategy or investment — even as a complement to reduction efforts — may become a gap as peers begin investing in removal technologies. With ~8M tCO₂e of annual Scope 3 emissions, Nike will likely need some form of removal or neutralization strategy if it eventually sets a net-zero target. The complete absence of an internal carbon price is also notable for a company of Nike's scale.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike FY24 Sustainability Data · Nike Emissions Footprint · SBTi Target Dashboard · CDP Climate Change Response
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7: FINANCIAL EFFECTS (ESRS E1-9, E1-11)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="financial">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-9 · E1-11 · CDP C3.4</div>
+      <div class="section-title">Anticipated Financial Effects</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>As a publicly traded company, Nike provides detailed financial reporting through SEC filings. However, the company's climate-specific financial disclosures remain limited — Nike does not separately quantify climate-related CapEx, OpEx, or the financial impacts of physical and transition risks in a manner aligned with ESRS E1-9 requirements. Climate investments are embedded within broader operational and innovation budgets.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Revenue (FY2024)</div>
+      <div class="card-value">$51.4B</div>
+      <div class="card-unit">Nike, Inc. consolidated revenue</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Emissions Intensity</div>
+      <div class="card-value small">162</div>
+      <div class="card-unit">tCO₂e per $M revenue (↓42% vs FY2019)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Climate CapEx</div>
+      <div class="card-value small" style="color: var(--text-muted);">N/D</div>
+      <div class="card-unit">Not separately disclosed</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Internal Carbon Price</div>
+      <div class="card-value small" style="color: var(--text-muted);">N/D</div>
+      <div class="card-unit">Not publicly disclosed</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Financial Risk Quantification</div>
+      <div class="detail-val muted">Not quantified in public disclosures</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Revenue at Risk from Climate</div>
+      <div class="detail-val muted">Not disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Assets at Risk</div>
+      <div class="detail-val muted">Not disclosed (supply chain concentration noted in 10-K)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate Opportunities</div>
+      <div class="detail-val">Sustainable materials (Nike Forward, Flyknit, recycled polyester), circular economy, consumer preference shift</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Sustainable Materials Revenue</div>
+      <div class="detail-val">78% of Nike/Jordan/Converse products contain recycled material</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Water Stewardship</div>
+      <div class="detail-val">40% freshwater reduction in material manufacturing (decade trend)</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">CSRD Readiness Gap</div>
+    <p>ESRS E1-9 and E1-11 require quantified financial effects from physical and transition risks, reconciled to financial statements. Nike currently does not provide climate-specific CapEx/OpEx breakdowns, asset-level risk exposure, or financial impact estimates in public disclosures. While Nike's operational emissions are relatively small (~3% of total), the financial exposure from supply chain disruptions in climate-vulnerable manufacturing regions (Vietnam, Indonesia, China) could be material. As a U.S.-listed company, Nike is not directly subject to CSRD but may face increasing pressure from European operations and investor expectations.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike 10-K (FY2024) · Nike FY24 Sustainability Data · Nike Annual Report · SEC filings
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 8: GOVERNANCE & ACCOUNTABILITY (ESRS 2 GOV)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="governance">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS 2 GOV · CDP C1</div>
+      <div class="section-title">Governance & Accountability</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Nike has established robust climate governance with <strong>board-level oversight</strong> through the Corporate Responsibility, Sustainability &amp; Governance Committee, comprised of independent directors. The company's sustainability efforts are led by <strong>Chief Sustainability Officer Noel Kinder</strong>, a 25+ year Nike veteran who previously served as VP of Sustainable Manufacturing &amp; Sourcing and GM of Nike Vietnam. Climate and sustainability metrics are integrated into Nike's strategic planning and reporting frameworks.</p>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Board Oversight</div>
+      <div class="detail-val green">Corporate Responsibility, Sustainability & Governance Committee</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Chief Sustainability Officer</div>
+      <div class="detail-val green">Noel Kinder (VP & CSO, 25+ year Nike veteran)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Executive Compensation</div>
+      <div class="detail-val muted">ESG linkage to executive comp not fully disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Reporting Frameworks</div>
+      <div class="detail-val">GRI Standards · SASB · TCFD-aligned · CDP</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CDP Reporting</div>
+      <div class="detail-val">Annual — Score: A-</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">External Assurance</div>
+      <div class="detail-val">Select metrics: S1, S2, energy, RE%, subset of S3</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">RE100 Member</div>
+      <div class="detail-val green">Yes — committed to 100% renewable electricity</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Impact Report</div>
+      <div class="detail-val"><a href="https://www.nike.com/sustainability" style="color:var(--accent);">nike.com/sustainability</a> (published annually)</div>
+    </div>
+  </div>
+
+  <!-- Peer comparison: governance -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Climate Governance Maturity</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Company</th><th>Board Oversight</th><th>Exec Comp Link</th><th>Dedicated CSO</th><th>CDP Score</th><th>SBTi</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="highlight">Nike</td>
+            <td style="color:var(--green);">Yes (Committee)</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td style="color:var(--green);">Noel Kinder (CSO)</td>
+            <td>A-</td>
+            <td style="color:var(--green);">Validated</td>
+          </tr>
+          <tr>
+            <td>Adidas</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--green);">Yes (ESG linked)</td>
+            <td style="color:var(--green);">VP Sustainability</td>
+            <td>A</td>
+            <td style="color:var(--green);">Validated</td>
+          </tr>
+          <tr>
+            <td>Puma</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--green);">Yes (ESG linked)</td>
+            <td style="color:var(--green);">CSO</td>
+            <td>A</td>
+            <td style="color:var(--green);">Validated</td>
+          </tr>
+          <tr>
+            <td>H&amp;M Group</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--green);">Partial</td>
+            <td style="color:var(--green);">Head of Sustainability</td>
+            <td>A</td>
+            <td style="color:var(--green);">Validated</td>
+          </tr>
+          <tr>
+            <td>VF Corporation</td>
+            <td style="color:var(--green);">Yes</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td>VP Sustainability</td>
+            <td>A-</td>
+            <td style="color:var(--green);">Validated</td>
+          </tr>
+          <tr>
+            <td>Lululemon</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td>SVP Impact</td>
+            <td>B</td>
+            <td style="color:var(--green);">Validated</td>
+          </tr>
+          <tr>
+            <td>Under Armour</td>
+            <td style="color:var(--yellow);">Partial</td>
+            <td style="color:var(--text-dim);">Not disclosed</td>
+            <td style="color:var(--text-dim);">Team-level</td>
+            <td>B-</td>
+            <td style="color:var(--text-dim);">Not validated</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Nike FY24 Sustainability Data · Nike Proxy Statement (FY2024) · Nike Board Committee Charters · RE100 Members · CDP Scores · SBTi Target Dashboard · Company sustainability reports for peer data
+  </div>
+</div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="page-footer">
+  <p><strong style="color:var(--text-muted);">Data Compilation Notes</strong></p>
+  <p>This climate strategy profile was compiled from publicly available sources including the Nike FY24 Sustainability Data Report, Nike Emissions Footprint (FY24), Nike Impact Report, CDP Climate Change questionnaire responses, SBTi Target Dashboard, RE100 membership data, Nike 10-K (FY2024), Nike Proxy Statement, and the Nike Circular Design Guide.</p>
+  <p>Nike's emissions data uses the company's published SBT footprint figures. Scope 2 in the historical table is location-based; market-based Scope 2 is significantly lower due to 96% renewable electricity procurement. The 69% Scope 1+2 reduction figure uses market-based accounting against the FY2020 baseline for owned/operated facilities. Scope 3 category breakdown reflects Nike's FY2024 Emissions Footprint methodology. Total footprint figures rounded to nearest 0.1M tCO₂e.</p>
+  <p>Template structure aligned with ESRS E1 Disclosure Requirements (E1-1 through E1-11) cross-referenced with CDP Climate Change questionnaire sections. Peer comparison data sourced from respective company sustainability reports, CDP scores, and SBTi Target Dashboard.</p>
+  <p style="margin-top:12px;">Compiled: February 2026 · Framework: ESRS E1 + CDP Climate Change · For benchmarking purposes only</p>
+</footer>
+
+</div><!-- /page-container -->
+
+<!-- Section nav active state script -->
+<script>
+  const navLinks = document.querySelectorAll('.section-nav a');
+  const sections = document.querySelectorAll('.section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.section-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

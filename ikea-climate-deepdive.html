@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKEA (Inter IKEA Group) — Climate Strategy Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090C;
+    --surface: #0D1117;
+    --surface2: #131920;
+    --border: #1B2430;
+    --border-accent: #2A3A4E;
+    --text: #D1D5DB;
+    --text-muted: #6B7280;
+    --text-dim: #3E4854;
+    --heading: #F0F2F5;
+    --accent: #E8720C;
+    --accent-dim: #7A3D06;
+    --green: #22C55E;
+    --green-dim: #14532D;
+    --yellow: #EAB308;
+    --yellow-dim: #713F12;
+    --red: #EF4444;
+    --red-dim: #7F1D1D;
+    --blue: #3B82F6;
+    --blue-dim: #1E3A5F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV BAR ─────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,9,12,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar .back-link {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--accent); text-decoration: none; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar .back-link:hover { text-decoration: underline; }
+  .topbar .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.5px;
+  }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .hero {
+    padding: 64px 32px 48px;
+    max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Anybody', sans-serif; font-size: 42px;
+    font-weight: 700; color: var(--heading); letter-spacing: -1px;
+    line-height: 1.15; margin-bottom: 8px;
+  }
+  .hero-sub {
+    font-size: 16px; color: var(--text-muted); margin-bottom: 12px;
+  }
+  .hero-note {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-dim); margin-bottom: 24px; line-height: 1.6;
+    font-style: italic;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 24px;
+  }
+  .meta-chip {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 6px 14px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .meta-chip strong { color: var(--text); font-weight: 500; }
+  .meta-chip.status-good { border-color: var(--green-dim); }
+  .meta-chip.status-good strong { color: var(--green); }
+  .meta-chip.status-warn { border-color: var(--yellow-dim); }
+  .meta-chip.status-warn strong { color: var(--yellow); }
+  .meta-chip.status-bad { border-color: var(--red-dim); }
+  .meta-chip.status-bad strong { color: var(--red); }
+
+  /* ── LAYOUT ──────────────────────────────────── */
+  .page-container {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px 80px;
+  }
+
+  /* Anchor nav */
+  .section-nav {
+    position: sticky; top: 49px; z-index: 90;
+    background: rgba(7,9,12,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0; margin-bottom: 40px;
+    overflow-x: auto; white-space: nowrap;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .section-nav a {
+    display: inline-block; padding: 14px 18px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.5px; color: var(--text-dim);
+    text-decoration: none; border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .section-nav a:hover { color: var(--text-muted); }
+  .section-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Section blocks */
+  .section {
+    margin-bottom: 56px; scroll-margin-top: 120px;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'Anybody', sans-serif; font-size: 28px;
+    font-weight: 300; color: var(--text-dim);
+    min-width: 40px;
+  }
+  .section-title-group { flex: 1; }
+  .section-esrs {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; color: var(--accent-dim);
+    text-transform: uppercase; margin-bottom: 2px;
+  }
+  .section-title {
+    font-family: 'Anybody', sans-serif; font-size: 20px;
+    font-weight: 600; color: var(--heading); letter-spacing: -0.3px;
+  }
+
+  /* Maturity badge */
+  .maturity {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; padding: 5px 12px;
+    border-radius: 4px; text-transform: uppercase; font-weight: 500;
+    white-space: nowrap;
+  }
+  .maturity.comprehensive { background: var(--green-dim); color: var(--green); }
+  .maturity.partial { background: var(--yellow-dim); color: var(--yellow); }
+  .maturity.not-disclosed { background: var(--red-dim); color: var(--red); }
+
+  /* Data cards */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'Anybody', sans-serif; font-size: 32px;
+    font-weight: 600; color: var(--heading); line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .card-value.small { font-size: 22px; }
+  .card-unit {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted);
+  }
+  .card-delta {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    margin-top: 8px;
+  }
+  .card-delta.positive { color: var(--green); }
+  .card-delta.negative { color: var(--red); }
+
+  /* Prose blocks */
+  .prose { max-width: 760px; margin-bottom: 24px; }
+  .prose p { margin-bottom: 14px; color: var(--text); }
+  .prose strong { color: var(--heading); font-weight: 600; }
+  .prose em { color: var(--text-muted); }
+
+  /* Data table */
+  .data-table-wrap {
+    overflow-x: auto; margin-bottom: 24px;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .data-table th {
+    text-align: left; padding: 12px 16px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .data-table th:first-child { border-radius: 10px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 10px 0 0; }
+  .data-table td {
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(232,114,12,0.03); }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table .highlight { color: var(--accent); font-weight: 500; }
+
+  /* SVG chart container */
+  .chart-container {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px; margin-bottom: 24px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 1px; color: var(--text-muted);
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+
+  /* Bar chart */
+  .bar-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .bar-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 72px; text-align: right;
+  }
+  .bar-track {
+    flex: 1; height: 20px; background: var(--surface2);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text); min-width: 80px;
+  }
+
+  /* Roadmap / Timeline */
+  .timeline { padding-left: 24px; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 8px;
+    bottom: 8px; width: 1px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; padding: 0 0 28px 28px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -20px; top: 6px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+  }
+  .timeline-dot.done { background: var(--accent); border-color: var(--accent); }
+  .timeline-dot.current { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.4); }
+  .timeline-year {
+    font-family: 'Anybody', sans-serif; font-size: 16px;
+    font-weight: 600; color: var(--heading); margin-bottom: 4px;
+  }
+  .timeline-text {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+  }
+
+  /* Key-value detail rows */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; background: var(--surface);
+    margin-bottom: 24px;
+  }
+  .detail-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:nth-last-child(-n+2) { border-bottom: none; }
+  .detail-key {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 4px;
+  }
+  .detail-val {
+    font-size: 14px; color: var(--heading); font-weight: 400;
+  }
+  .detail-val.accent { color: var(--accent); }
+  .detail-val.green { color: var(--green); }
+  .detail-val.muted { color: var(--text-muted); font-style: italic; }
+
+  /* Source citations */
+  .source-note {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); padding: 12px 16px;
+    background: var(--surface2); border-radius: 6px;
+    margin-top: 16px; line-height: 1.6;
+  }
+  .source-note a { color: var(--accent-dim); }
+
+  /* Callout box */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(232,114,12,0.04);
+    padding: 16px 20px; border-radius: 0 8px 8px 0;
+    margin-bottom: 24px;
+  }
+  .callout p {
+    font-size: 13px; color: var(--text); line-height: 1.7;
+  }
+  .callout-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* Peer comparison mini-bar */
+  .peer-bar-wrap { margin-bottom: 24px; }
+  .peer-bar-item {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+  .peer-bar-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 110px; text-align: right;
+  }
+  .peer-bar-name.current { color: var(--accent); font-weight: 500; }
+  .peer-bar-track {
+    flex: 1; height: 10px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden; max-width: 320px;
+  }
+  .peer-bar-fill {
+    height: 100%; border-radius: 3px; background: var(--border-accent);
+  }
+  .peer-bar-fill.current { background: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  /* Footer */
+  .page-footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TOP BAR ═══════════════════════ -->
+<nav class="topbar">
+  <a href="index.html" class="back-link">← Back to Benchmark</a>
+  <span class="breadcrumb">/ Climate Benchmark / IKEA</span>
+</nav>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<header class="hero">
+  <div class="hero-label">Company Climate Strategy Deep Dive</div>
+  <h1>IKEA (Inter IKEA Group)</h1>
+  <p class="hero-sub">EUR 47.6B retail sales · Private · Delft, Netherlands / Leiden · ~225,000 co-workers · 60+ markets</p>
+  <p class="hero-note">IKEA's climate footprint is reported by Inter IKEA Group (franchisor &amp; brand owner) and Ingka Group (largest franchisee, operating ~90% of stores). Data below reflects the full IKEA value chain unless noted.</p>
+  <div class="hero-meta">
+    <span class="meta-chip status-good"><strong>SBTi Validated</strong></span>
+    <span class="meta-chip status-good"><strong>Climate Positive 2030</strong></span>
+    <span class="meta-chip">Scope <strong>1 + 2 + 3</strong></span>
+    <span class="meta-chip status-good">CDP Score <strong>A</strong></span>
+    <span class="meta-chip">Baseline <strong>FY2016</strong></span>
+  </div>
+</header>
+
+<!-- ═══════════════════════ SECTION NAV ═══════════════════════ -->
+<div class="page-container">
+<nav class="section-nav">
+  <a href="#transition" class="active">Transition Plan</a>
+  <a href="#emissions">Emissions</a>
+  <a href="#targets">Targets</a>
+  <a href="#energy">Energy</a>
+  <a href="#risk">Risk & Resilience</a>
+  <a href="#credits">Carbon Credits</a>
+  <a href="#financial">Financial Effects</a>
+  <a href="#governance">Governance</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1: TRANSITION PLAN (ESRS E1-1)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="transition">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-1 · CDP C3</div>
+      <div class="section-title">Transition Plan for Climate Change Mitigation</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>IKEA has published one of the most ambitious climate transition plans in global retail. The <strong>People &amp; Planet Positive</strong> strategy — now in its third iteration — commits the IKEA value chain to become <strong>"climate positive" by 2030</strong>, meaning IKEA aims to reduce more greenhouse gas emissions than its entire value chain emits. In June 2024, the Science Based Targets initiative (SBTi) formally validated IKEA's net-zero targets, confirming alignment with a <strong>1.5°C pathway</strong>.</p>
+    <p>The transition plan spans all Scope 1, 2, and 3 emissions across the full IKEA franchise system — from raw material extraction (52% of footprint) through product use at home (17%) and end-of-life (8%). IKEA explicitly rejects reliance on carbon offsets, committing to <strong>gross absolute emissions reductions</strong> across the value chain. Ingka Group, which operates ~90% of IKEA stores, has invested EUR 4.3B in renewable energy and committed EUR 7.5B by 2030.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Headline Ambition</div>
+      <div class="card-value small">Climate Positive</div>
+      <div class="card-unit">By 2030 — reduce more GHG than emitted</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Interim Target (FY30)</div>
+      <div class="card-value">−50%</div>
+      <div class="card-unit">Absolute GHG vs. FY16 (all scopes)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Long-Term Target</div>
+      <div class="card-value small">Net Zero</div>
+      <div class="card-unit">By FY50 · −90% absolute + removal</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Renewable Energy Investment</div>
+      <div class="card-value small">€7.5B</div>
+      <div class="card-unit">Committed by 2030 (Ingka Group)</div>
+    </div>
+  </div>
+
+  <!-- Decarbonization Levers -->
+  <div class="chart-container">
+    <div class="chart-title">Key Decarbonization Levers (by Value Chain Contribution)</div>
+    <div class="bar-row">
+      <span class="bar-label">Materials</span>
+      <div class="bar-track"><div class="bar-fill" style="width:52%; background: var(--accent);"></div></div>
+      <span class="bar-value">52% of footprint</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Product Use</span>
+      <div class="bar-track"><div class="bar-fill" style="width:17%; background: var(--blue);"></div></div>
+      <span class="bar-value">17% — energy at home</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">End-of-Life</span>
+      <div class="bar-track"><div class="bar-fill" style="width:8%; background: var(--yellow);"></div></div>
+      <span class="bar-value">8% — product disposal</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Production</span>
+      <div class="bar-track"><div class="bar-fill" style="width:7%; background: var(--green);"></div></div>
+      <span class="bar-value">7% — supplier manufacturing</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Transport</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">5% — logistics</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Other</span>
+      <div class="bar-track"><div class="bar-fill" style="width:11%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">11% — food, retail, travel</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Carbon Offset Reliance</div>
+      <div class="detail-val green">Explicitly rejected — gross absolute targets only</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CapEx Aligned to Climate</div>
+      <div class="detail-val accent">EUR 7.5B renewable energy commitment by 2030</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Dual Reporting Structure</div>
+      <div class="detail-val">Inter IKEA (franchisor) + Ingka Group (operator) aligned targets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">SBTi Validation</div>
+      <div class="detail-val green">Net-zero targets validated June 2024 (1.5°C aligned)</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Analyst Assessment</div>
+    <p>IKEA stands out as one of the most ambitious companies on climate globally. The combination of SBTi-validated 1.5°C targets, explicit rejection of offsets, massive renewable energy investment (EUR 7.5B), and a 28% absolute reduction already achieved by FY24 makes IKEA's transition plan among the most credible in retail. The key execution challenge remains materials (52% of footprint) — decarbonizing a global supply chain of ~1,600 suppliers across 50+ countries. The reframing from "Climate Positive 2030" to "Net Zero and Beyond" signals pragmatic ambition.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: IKEA Climate Report FY24 · Inter IKEA Sustainability Report FY24 · Ingka Group Annual Summary &amp; Sustainability Report FY24 · SBTi Target Validation (June 2024) · <a href="https://www.inter.ikea.com/en/performance/climate-report">inter.ikea.com/climate-report</a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2: GHG EMISSIONS PROFILE (ESRS E1-6)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="emissions">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-6 · CDP C6 · CDP C7</div>
+      <div class="section-title">GHG Emissions Profile</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Total Footprint (FY24)</div>
+      <div class="card-value">21.3M</div>
+      <div class="card-unit">tCO₂e (full value chain)</div>
+      <div class="card-delta positive">↓ 28% vs. FY16 baseline</div>
+    </div>
+    <div class="card">
+      <div class="card-label">FY16 Baseline</div>
+      <div class="card-value small">~29.6M</div>
+      <div class="card-unit">tCO₂e — full value chain</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Operations (Retail + Own)</div>
+      <div class="card-value small">~0.42M</div>
+      <div class="card-unit">tCO₂e — IKEA retail &amp; operations (~2%)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Value Chain (Scope 3)</div>
+      <div class="card-value small">~20.9M</div>
+      <div class="card-unit">tCO₂e — materials, use, transport (~98%)</div>
+    </div>
+  </div>
+
+  <!-- Emissions trend table -->
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fiscal Year</th>
+          <th class="num">Total (Mt CO₂e)</th>
+          <th class="num">Materials (Mt)</th>
+          <th class="num">Product Use (Mt)</th>
+          <th class="num">Production (Mt)</th>
+          <th class="num">Retail Sales (€B)</th>
+          <th class="num">% vs. FY16</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">FY16 (base)</td>
+          <td class="num">~29.6</td><td class="num">~15.4</td>
+          <td class="num">~5.0</td><td class="num">~2.1</td>
+          <td class="num">~36.4</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td>FY19</td>
+          <td class="num">~28.5</td><td class="num">~14.8</td>
+          <td class="num">~4.8</td><td class="num">~2.0</td>
+          <td class="num">~41.3</td>
+          <td class="num">−4%</td>
+        </tr>
+        <tr>
+          <td>FY20</td>
+          <td class="num">~26.2</td><td class="num">~13.6</td>
+          <td class="num">~4.5</td><td class="num">~1.8</td>
+          <td class="num">~39.6</td>
+          <td class="num">−12%</td>
+        </tr>
+        <tr>
+          <td>FY21</td>
+          <td class="num">~27.2</td><td class="num">~14.1</td>
+          <td class="num">~4.6</td><td class="num">~1.9</td>
+          <td class="num">~41.9</td>
+          <td class="num">−8%</td>
+        </tr>
+        <tr>
+          <td>FY22</td>
+          <td class="num">25.8</td><td class="num">~13.4</td>
+          <td class="num">~4.4</td><td class="num">~1.8</td>
+          <td class="num">44.6</td>
+          <td class="num">−12%</td>
+        </tr>
+        <tr>
+          <td>FY23</td>
+          <td class="num">23.7</td><td class="num">~12.3</td>
+          <td class="num">~4.0</td><td class="num">~1.7</td>
+          <td class="num">47.6</td>
+          <td class="num highlight">−22%</td>
+        </tr>
+        <tr>
+          <td class="highlight">FY24</td>
+          <td class="num highlight">21.3</td><td class="num highlight">11.0</td>
+          <td class="num">~3.6</td><td class="num">~1.5</td>
+          <td class="num">45.1</td>
+          <td class="num highlight">−28%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Value Chain Breakdown -->
+  <div class="chart-container">
+    <div class="chart-title">FY24 Value Chain Emissions Breakdown (21.3 Mt CO₂e)</div>
+    <div class="bar-row">
+      <span class="bar-label">Materials</span>
+      <div class="bar-track"><div class="bar-fill" style="width:52%; background: var(--accent);"></div></div>
+      <span class="bar-value">11.0 Mt (52%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Product Use</span>
+      <div class="bar-track"><div class="bar-fill" style="width:17%; background: var(--blue);"></div></div>
+      <span class="bar-value">~3.6 Mt (17%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">End-of-Life</span>
+      <div class="bar-track"><div class="bar-fill" style="width:8%; background: var(--yellow);"></div></div>
+      <span class="bar-value">~1.7 Mt (8%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Production</span>
+      <div class="bar-track"><div class="bar-fill" style="width:7%; background: var(--green);"></div></div>
+      <span class="bar-value">~1.5 Mt (7%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Transport</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">~1.1 Mt (5%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Food</span>
+      <div class="bar-track"><div class="bar-fill" style="width:4%; background: #F59E0B;"></div></div>
+      <span class="bar-value">~0.8 Mt (4%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Retail Ops</span>
+      <div class="bar-track"><div class="bar-fill" style="width:2%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">~0.4 Mt (2%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Other</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: var(--border-accent);"></div></div>
+      <span class="bar-value">~1.2 Mt (5%)</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Reporting Standard</div>
+      <div class="detail-val">GHG Protocol — reported by value chain position</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Reporting Boundary</div>
+      <div class="detail-val">Full IKEA franchise system (Inter IKEA + all franchisees)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Verification</div>
+      <div class="detail-val">Third-party assurance; SBTi-validated methodology</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Unique Approach</div>
+      <div class="detail-val accent">Value-chain-based reporting (not traditional S1/S2/S3 split)</div>
+    </div>
+  </div>
+
+  <!-- Peer Comparison -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Absolute Emissions Reduction vs. Baseline</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">IKEA</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:56%"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">−28% (FY16→FY24)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Unilever</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:28%"></div></div>
+        <span class="bar-value" style="font-size:11px;">−14% (Scope 1+2)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Nestlé</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:26%"></div></div>
+        <span class="bar-value" style="font-size:11px;">−13.5% (full chain)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Microsoft</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:14%"></div></div>
+        <span class="bar-value" style="font-size:11px;">−7% S1+S2 (rising S3)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Danone</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:48%"></div></div>
+        <span class="bar-value" style="font-size:11px;">−24% (full scope)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:33%"></div></div>
+        <span class="bar-value" style="font-size:11px;">−16.4% (full chain)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: IKEA Climate Report FY24 · Inter IKEA Sustainability Report FY24 · IKEA value chain climate footprint data page · Peer data from respective sustainability reports and CDP disclosures
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3: TARGETS & PROGRESS (ESRS E1-4)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="targets">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-4 · CDP C4</div>
+      <div class="section-title">Climate Targets & Progress</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Scope</th>
+          <th>Type</th>
+          <th>Base Year</th>
+          <th>Target Year</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>−50% total GHG (value chain)</td>
+          <td>1+2+3</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY30</td>
+          <td class="highlight">28% achieved (of 50%)</td>
+        </tr>
+        <tr>
+          <td>−80% production emissions</td>
+          <td>3 (upstream)</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY30</td>
+          <td>In progress</td>
+        </tr>
+        <tr>
+          <td>−50% materials emissions</td>
+          <td>3 (upstream)</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY30</td>
+          <td>~29% achieved</td>
+        </tr>
+        <tr>
+          <td>−70% product use at home</td>
+          <td>3 (downstream)</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY30</td>
+          <td>~28% achieved</td>
+        </tr>
+        <tr>
+          <td>−80% retail &amp; operations</td>
+          <td>1+2</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY30</td>
+          <td style="color:var(--green);">On track (96.6% RE)</td>
+        </tr>
+        <tr>
+          <td>−30% product end-of-life</td>
+          <td>3 (downstream)</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY30</td>
+          <td>In progress</td>
+        </tr>
+        <tr>
+          <td>−90% absolute GHG</td>
+          <td>1+2+3</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY50</td>
+          <td>Long-term</td>
+        </tr>
+        <tr>
+          <td>Net Zero (residual neutralized)</td>
+          <td>1+2+3</td>
+          <td>Absolute</td>
+          <td>FY16</td>
+          <td>FY50</td>
+          <td>Committed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Roadmap Timeline -->
+  <div class="chart-container">
+    <div class="chart-title">Decarbonization Roadmap</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY16 — Baseline</div>
+        <div class="timeline-text">~29.6M tCO₂e total value chain emissions. IKEA People &amp; Planet Positive strategy first launched. Baseline set for all subsequent reduction targets.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY18 — Forest Agenda &amp; RE Push</div>
+        <div class="timeline-text">100% of wood from more sustainable sources (FSC-certified or recycled). Ingka Group begins scaling renewable energy investments. IKEA starts reporting full value chain climate footprint.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY20 — 100% Renewable Electricity</div>
+        <div class="timeline-text">Ingka Group reaches 100% renewable electricity for own operations. 935,000+ solar panels installed across stores and warehouses. EUR 2.5B invested in wind and solar farms. COVID disruption temporarily reduces emissions.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY22 — Acceleration Begins</div>
+        <div class="timeline-text">25.8M tCO₂e (−12% vs. FY16). Ingka Group commits additional EUR 4B to renewable energy — total commitment to EUR 7.5B by 2030. EU Deforestation Regulation preparations begin. First zero-emission delivery pilots.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">FY23 — Major Reduction</div>
+        <div class="timeline-text">23.7M tCO₂e (−22% vs. FY16). 12% year-on-year drop driven by renewable energy, efficiency, and electrification. 24.6% of home deliveries by zero-emission vehicles. Target upgraded from −15% to −50% by FY30.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-year">FY24 — Current Position</div>
+        <div class="timeline-text">21.3M tCO₂e (−28% vs. FY16). SBTi validates net-zero targets (June 2024). 41.1% zero-emission deliveries. 96.6% renewable electricity. Ingka Group achieves 30.1% total footprint reduction. Revenue grown 24% since FY16 while emissions fell 28%.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">FY25 — In Progress</div>
+        <div class="timeline-text">60.1% zero-emission home deliveries achieved. Ingka Group reports 70.6% reduction in own operations. Continued supplier engagement on materials decarbonization. FY30 roadmap execution in full swing.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">FY30 — Climate Positive</div>
+        <div class="timeline-text">−50% total GHG · −80% production · −50% materials · −70% product use · −80% operations · −30% end-of-life. Climate positive: reduce more GHG than the value chain emits. 15 TWh renewable energy generation target.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">FY50 — Net Zero</div>
+        <div class="timeline-text">−90% absolute GHG across full value chain. Residual emissions neutralized through carbon removal and storage within the IKEA value chain. No reliance on external offsets.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Target Type</div>
+      <div class="detail-val green">Gross absolute (no credit netting, no offsets)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">SBTi Status</div>
+      <div class="detail-val green">Net-zero targets validated (June 2024)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Pathway Alignment</div>
+      <div class="detail-val">1.5°C (Paris Agreement)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Target Boundary</div>
+      <div class="detail-val">Full IKEA franchise system (all scopes, all markets)</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: IKEA Climate Report FY24 · SBTi Target Dashboard (June 2024) · Ingka Group Annual Summary FY24/FY25 · Inter IKEA Sustainability Strategy 2025–2030
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4: ENERGY CONSUMPTION & MIX (ESRS E1-5)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="energy">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-5 · CDP C8</div>
+      <div class="section-title">Energy Consumption & Mix</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Renewable Electricity</div>
+      <div class="card-value">96.6%</div>
+      <div class="card-unit">of Ingka Group electricity (FY24)</div>
+      <div class="card-delta positive">↑ from ~70% in FY16</div>
+    </div>
+    <div class="card">
+      <div class="card-label">RE Investment</div>
+      <div class="card-value small">€4.3B</div>
+      <div class="card-unit">Invested in wind &amp; solar (to date)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Solar Panels</div>
+      <div class="card-value small">935k+</div>
+      <div class="card-unit">Installed on IKEA stores &amp; warehouses</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Wind Turbines</div>
+      <div class="card-value small">547</div>
+      <div class="card-unit">Across 47 wind farms globally</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>IKEA is one of the <strong>largest private investors in renewable energy globally</strong>. Ingka Group — operating ~90% of IKEA stores — has invested EUR 4.3 billion in wind and solar energy assets and committed a total of <strong>EUR 7.5 billion by 2030</strong> to produce 15 terawatt-hours of renewable energy annually. The company operates 47 wind farms and 26 solar parks, with a combined installed capacity exceeding <strong>1.7 GW</strong>.</p>
+    <p>Ingka Group reached <strong>100% renewable electricity</strong> for its own operations by FY20 and maintains 96.6% renewable electricity as of FY24. Remaining gaps are in markets with limited grid access to renewables. Beyond electricity, IKEA is addressing thermal energy through heat pumps, biogas, and electrification of heating systems in stores and warehouses.</p>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Renewable Energy Asset Portfolio (Ingka Group)</div>
+    <div class="bar-row">
+      <span class="bar-label">Wind Farms</span>
+      <div class="bar-track"><div class="bar-fill" style="width:65%; background: var(--blue);"></div></div>
+      <span class="bar-value">47 farms · 547 turbines</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Solar Parks</span>
+      <div class="bar-track"><div class="bar-fill" style="width:35%; background: var(--yellow);"></div></div>
+      <span class="bar-value">26 parks · 935k+ panels</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Capacity</span>
+      <div class="bar-track"><div class="bar-fill" style="width:85%; background: var(--green);"></div></div>
+      <span class="bar-value">1.7+ GW installed</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">RE Target</span>
+      <div class="bar-track"><div class="bar-fill" style="width:50%; background: var(--accent);"></div></div>
+      <span class="bar-value">15 TWh/yr by 2030</span>
+    </div>
+  </div>
+
+  <!-- Peer Comparison: RE -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Renewable Energy Achievement</div>
+    <div class="peer-bar-wrap">
+      <div class="peer-bar-item">
+        <span class="peer-bar-name current">IKEA (Ingka)</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill current" style="width:97%;"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--accent);">96.6% RE — €7.5B committed</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Microsoft</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% RE (PPA-based)</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Unilever</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:100%; background: var(--green);"></div></div>
+        <span class="bar-value" style="font-size:11px; color:var(--green);">100% grid RE</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Nestlé</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:50%;"></div></div>
+        <span class="bar-value" style="font-size:11px;">~50% RE — Target 100% by 2025</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Mars</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:59%;"></div></div>
+        <span class="bar-value" style="font-size:11px;">59% RE — Target 2040</span>
+      </div>
+      <div class="peer-bar-item">
+        <span class="peer-bar-name">Danone</span>
+        <div class="peer-bar-track"><div class="peer-bar-fill" style="width:55%;"></div></div>
+        <span class="bar-value" style="font-size:11px;">~55% RE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Home Solar (Customers)</div>
+      <div class="detail-val">IKEA sells home solar panel systems in select markets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">EV Deliveries (FY25)</div>
+      <div class="detail-val green">60.1% of home deliveries by zero-emission vehicles</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Operations Footprint Reduction</div>
+      <div class="detail-val green">−70.6% from own operations (Ingka FY25 vs. FY16)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Key Challenge</div>
+      <div class="detail-val muted">Limited grid capacity for RE heating/cooling in some markets</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Ingka Group Annual Summary FY24 &amp; FY25 · Ingka Investments Renewable Energy page · IKEA Climate Report FY24 · Company sustainability reports for peer data
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 5: CLIMATE RISK & RESILIENCE (ESRS E1-2, E1-3)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="risk">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-2 · E1-3 · CDP C2</div>
+      <div class="section-title">Climate Risk Identification & Resilience</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>IKEA has conducted <strong>climate scenario analysis</strong> aligned with TCFD recommendations, informing its net-zero goals validated by SBTi. As the world's largest furniture retailer — dependent on wood, cotton, plastics, metals, and complex global supply chains — IKEA faces significant exposure to both physical climate risks and transition risks. The company's <strong>business consequence analysis</strong> supports the FY30 roadmap, though detailed quantified financial impacts remain limited in public disclosures.</p>
+  </div>
+
+  <!-- Physical Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Physical Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Type</th><th>Time Horizon</th><th>Value Chain Impact</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Forest fires / drought affecting wood supply</td><td>Acute/Chronic</td><td>Medium-Long</td>
+            <td>Upstream (forestry, 52% of footprint)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Flooding at stores &amp; distribution centers</td><td>Acute</td><td>Short-Medium</td>
+            <td>Own operations (460+ stores)</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Water stress in cotton-growing regions</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Upstream (textiles, South Asia)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Rising sea levels at coastal warehouses</td><td>Chronic</td><td>Long</td>
+            <td>Distribution (port facilities)</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Extreme heat impacting logistics</td><td>Acute</td><td>Short-Medium</td>
+            <td>Transport &amp; co-worker welfare</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Disruption to bamboo &amp; tropical wood sourcing</td><td>Chronic</td><td>Medium</td>
+            <td>Upstream (SE Asia, Latin America)</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transition Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Transition Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Category</th><th>Time Horizon</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>EU Deforestation Regulation (EUDR) compliance</td><td>Policy &amp; Legal</td><td>Short</td>
+            <td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Carbon border adjustments (CBAM) on materials</td><td>Policy &amp; Legal</td><td>Short-Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Extended producer responsibility (EPR) expansion</td><td>Policy &amp; Legal</td><td>Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Consumer demand for circular / low-carbon products</td><td>Market</td><td>Short-Medium</td>
+            <td style="color:var(--green);">Opportunity</td>
+          </tr>
+          <tr>
+            <td>Rising cost of virgin materials</td><td>Market</td><td>Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Supplier decarbonization capacity constraints</td><td>Technology</td><td>Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Scenario Analysis</div>
+      <div class="detail-val">Business consequence analysis conducted (supports SBTi validation)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scenarios Used</div>
+      <div class="detail-val muted">Aligned with 1.5°C pathway; details not fully public</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Key Adaptation — Forestry</div>
+      <div class="detail-val">100% FSC-certified / recycled wood; Forest Agenda 2030</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Key Adaptation — Circularity</div>
+      <div class="detail-val">Circular product design; buy-back &amp; resell programs</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Gap Assessment</div>
+    <p>IKEA's climate risk identification is directionally strong — the company recognizes its concentrated exposure in materials (52% of footprint) and has clear adaptation strategies through sustainable sourcing, circularity, and renewable energy. However, quantified financial impact estimates for specific risks are not fully disclosed in public reports. Under ESRS E1-2 and E1-3, IKEA would need to provide more granular scenario assumptions, financial quantification, and asset-level resilience assessments. The dual reporting structure (Inter IKEA + Ingka) also complicates consolidated risk reporting.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: IKEA Climate Report FY24 · Inter IKEA Sustainability Report FY24 · CDP Climate Change Response (Ingka Group) · IKEA Forest Agenda 2030 · EUDR compliance disclosures
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 6: CARBON CREDITS & OFFSETS (ESRS E1-7)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="credits">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-7 · CDP C11</div>
+      <div class="section-title">Carbon Credits, Offsets & Removals</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>IKEA takes one of the most principled positions on carbon offsets among major corporations: the company <strong>explicitly rejects reliance on offsets</strong> to meet its climate targets. All IKEA reduction targets are gross absolute — no netting of credits against emissions. The FY50 net-zero commitment requires at least 90% absolute reduction, with only <strong>residual emissions neutralized through carbon removal and storage within the IKEA value chain</strong> — not through external offset purchases.</p>
+    <p>This position reflects IKEA's view that offsets do not substitute for real emissions reductions and that the company should invest in decarbonizing its own value chain rather than paying to offset elsewhere. For residual emissions, IKEA is exploring in-chain carbon removal through <strong>forestry management</strong>, <strong>soil carbon sequestration</strong>, and <strong>bio-based materials</strong> that store carbon in products.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Offsets Used for Targets</div>
+      <div class="card-value small" style="color: var(--green);">None</div>
+      <div class="card-unit">Explicit "no offsets" policy</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Reduction Strategy</div>
+      <div class="card-value small">Gross</div>
+      <div class="card-unit">All targets are absolute, no credit netting</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Residual Emissions Plan</div>
+      <div class="card-value small">In-chain</div>
+      <div class="card-unit">Removal within own value chain only</div>
+    </div>
+    <div class="card">
+      <div class="card-label">FY50 Residual Cap</div>
+      <div class="card-value small">≤10%</div>
+      <div class="card-unit">Max residual after −90% absolute reduction</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Carbon Neutral Product Claims</div>
+      <div class="detail-val green">Not used — IKEA does not label products "carbon neutral"</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Offset Purchases (Voluntary)</div>
+      <div class="detail-val green">None disclosed — policy prohibits reliance on offsets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">In-chain Removal Strategy</div>
+      <div class="detail-val">Forestry, soil carbon, bio-based materials, circular design</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Carbon Storage in Products</div>
+      <div class="detail-val">Exploring carbon stored in wood/bio-based furniture materials</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Standout Position</div>
+    <p>IKEA's explicit rejection of offsets — combined with SBTi-validated gross absolute targets — places the company in a small minority of large corporations that refuse to use carbon credits as part of their climate strategy. This is noteworthy given IKEA's scale (~225,000 co-workers, 60+ markets) and the fact that many peers in retail and consumer goods rely heavily on offsets and carbon-neutral claims. The in-chain removal approach (forestry, soil carbon) is credible given IKEA's position as one of the world's largest buyers of wood.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: IKEA Climate Report FY24 · Inter IKEA Group climate footprint methodology · Ingka Group Net Zero Transition Plan · IKEA Climate Agenda page
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7: FINANCIAL EFFECTS (ESRS E1-9, E1-11)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="financial">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-9 · E1-11 · CDP C3.4</div>
+      <div class="section-title">Anticipated Financial Effects</div>
+    </div>
+    <span class="maturity partial">Partial</span>
+  </div>
+
+  <div class="prose">
+    <p>As a private company, IKEA's financial disclosures are more limited than publicly listed peers. However, IKEA has demonstrated <strong>exceptional financial commitment to climate action</strong> — particularly through Ingka Group's EUR 7.5B renewable energy investment program, making it one of the largest private clean-energy investors globally. IKEA frames climate action as a <strong>business enabler</strong> rather than a cost center, noting that revenue has grown 24% since FY16 while emissions have fallen 28%.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Renewable Energy Investment</div>
+      <div class="card-value">€7.5B</div>
+      <div class="card-unit">Committed by 2030 (Ingka Group)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Invested to Date</div>
+      <div class="card-value small">€4.3B</div>
+      <div class="card-unit">In wind &amp; solar farms (Ingka)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Revenue Growth vs. Baseline</div>
+      <div class="card-value small">+24%</div>
+      <div class="card-unit">FY16→FY24 (while emissions −28%)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Food Waste Savings</div>
+      <div class="card-value small">37.8M</div>
+      <div class="card-unit">Portions saved (−60.5% waste/cover since FY17)</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Energy Cost Hedging</div>
+      <div class="detail-val green">Owned RE assets provide long-term energy price stability</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Circular Revenue Streams</div>
+      <div class="detail-val">Buy-back, resell, rental, and refurbishment programs</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Home Solar Revenue</div>
+      <div class="detail-val">Customer-facing solar panel sales in select markets</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Financial Risk Quantification</div>
+      <div class="detail-val muted">Not publicly quantified (private company)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Revenue at Risk from Climate</div>
+      <div class="detail-val muted">Not disclosed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Assets at Risk</div>
+      <div class="detail-val muted">Not disclosed (460+ stores + supply chain exposure noted)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate Opportunities</div>
+      <div class="detail-val">Circular products, RE generation, energy-efficient home range</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">EV Delivery Savings</div>
+      <div class="detail-val">Lower fuel costs as 60.1% of deliveries now zero-emission</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">CSRD Readiness Gap</div>
+    <p>ESRS E1-9 and E1-11 require quantified financial effects from physical and transition risks, reconciled to financial statements. IKEA currently provides directional investment figures (EUR 7.5B in RE) and qualitative opportunity descriptions, but not the granular risk quantification, asset-level exposure analysis, or financial statement reconciliation that CSRD demands. The private ownership structure means IKEA currently has no legal obligation for these disclosures — but as a franchisor operating across Europe, CSRD alignment will become increasingly relevant for stakeholder expectations.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Ingka Group Annual Summary FY24 · Inter IKEA Holding B.V. Annual Report FY24 · Ingka Investments · IKEA Climate Report FY24
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 8: GOVERNANCE & ACCOUNTABILITY (ESRS 2 GOV)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="governance">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS 2 GOV · CDP C1</div>
+      <div class="section-title">Governance & Accountability</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>IKEA's climate governance is structured across the franchise system through the <strong>Strategic Sustainability Council</strong>, chaired by the CEO of Inter IKEA Group. This council includes managing directors from Inter IKEA Group and franchisees (including Ingka Group), ensuring alignment on climate targets across the ~90% of IKEA stores operated by Ingka and the remaining franchise network. A dedicated <strong>Chief Sustainability Officer</strong> leads Inter IKEA Group's sustainability management team, with sustainability managers embedded across three core businesses: Retail Concept, Range &amp; Supply.</p>
+    <p>IKEA has integrated sustainability into its core business strategy through the <strong>People &amp; Planet Positive</strong> framework, with objectives and key results (OKRs) extending through 2030. The company reports annually through both its Sustainability Report and a dedicated <strong>Climate Report</strong>, demonstrating sector-leading transparency for a private company.</p>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Highest Oversight Body</div>
+      <div class="detail-val green">Strategic Sustainability Council (chaired by Group CEO)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Chief Sustainability Officer</div>
+      <div class="detail-val green">Inter IKEA Group CSO (dedicated role)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Cross-franchise Alignment</div>
+      <div class="detail-val">Council includes Inter IKEA + Ingka + other franchisees</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Strategy Integration</div>
+      <div class="detail-val green">People &amp; Planet Positive embedded in business OKRs</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Sustainability Managers</div>
+      <div class="detail-val">Embedded across Retail Concept, Range &amp; Supply divisions</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Executive Compensation</div>
+      <div class="detail-val muted">Not explicitly disclosed (private company)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Reporting Cadence</div>
+      <div class="detail-val green">Annual Sustainability Report + dedicated Climate Report</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CDP Reporting</div>
+      <div class="detail-val green">CDP Score A (Ingka Group) — annual disclosure</div>
+    </div>
+  </div>
+
+  <!-- Peer comparison: governance -->
+  <div class="chart-container">
+    <div class="chart-title">Peer Comparison — Climate Governance Maturity</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Company</th><th>Board / Council Oversight</th><th>Dedicated Climate/Sustainability Role</th><th>SBTi Validated</th><th>CDP Score</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="highlight">IKEA</td>
+            <td style="color:var(--green);">Strategic Sustainability Council</td>
+            <td style="color:var(--green);">Chief Sustainability Officer</td>
+            <td style="color:var(--green);">Yes (Net Zero)</td>
+            <td style="color:var(--green);">A</td>
+          </tr>
+          <tr>
+            <td>Unilever</td>
+            <td style="color:var(--green);">Board-level committee</td>
+            <td style="color:var(--green);">Chief Sustainability Officer</td>
+            <td style="color:var(--green);">Yes</td>
+            <td>A</td>
+          </tr>
+          <tr>
+            <td>Microsoft</td>
+            <td style="color:var(--green);">Board oversight</td>
+            <td style="color:var(--green);">Chief Sustainability Officer</td>
+            <td style="color:var(--green);">Yes</td>
+            <td>A</td>
+          </tr>
+          <tr>
+            <td>Nestlé</td>
+            <td style="color:var(--green);">Board ESG committee</td>
+            <td style="color:var(--green);">Chief Sustainability Officer</td>
+            <td style="color:var(--green);">Yes</td>
+            <td>A-</td>
+          </tr>
+          <tr>
+            <td>Mars</td>
+            <td style="color:var(--green);">Board committee</td>
+            <td style="color:var(--green);">Chief Climate Officer</td>
+            <td style="color:var(--green);">Yes</td>
+            <td>A-</td>
+          </tr>
+          <tr>
+            <td>Danone</td>
+            <td style="color:var(--green);">Board oversight</td>
+            <td style="color:var(--green);">CSO + Climate team</td>
+            <td style="color:var(--green);">Yes</td>
+            <td>A</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Governance Strength</div>
+    <p>IKEA's governance model is notable for its cross-franchise coordination — aligning climate targets across a complex system of independent franchisees through the Strategic Sustainability Council. The CEO-chaired council provides the highest level of oversight. The dual Climate Report + Sustainability Report publishing cadence exceeds most private companies' disclosure levels. The main governance gap is the lack of disclosed executive compensation linkage to climate targets — though this is common among private companies.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: IKEA Sustainability Governance page · Inter IKEA Sustainability Report FY24 · Ingka Group CDP Climate Change Response · Company reports for peer data
+  </div>
+</div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="page-footer">
+  <p><strong style="color:var(--text-muted);">Data Compilation Notes</strong></p>
+  <p>This climate strategy profile was compiled from publicly available sources including the IKEA Climate Report FY24, Inter IKEA Group Sustainability Report FY24, Ingka Group Annual Summary &amp; Sustainability Report (FY24 and FY25), CDP Climate Change questionnaire responses, SBTi Target Dashboard, and IKEA's public climate data pages. Historical emissions data for FY16–FY21 are estimated from reported percentage reductions and FY22–FY24 reported figures.</p>
+  <p>IKEA reports emissions by value chain position (materials, production, product use, etc.) rather than the traditional Scope 1/2/3 classification. "IKEA retail &amp; other operations" (~2% of total) roughly corresponds to Scope 1+2, while remaining categories map to Scope 3. Revenue figures reference IKEA retail sales (all franchisees) unless noted. Inter IKEA Group revenue (wholesale + franchise fees) was EUR 26.5B in FY24.</p>
+  <p>Template structure aligned with ESRS E1 Disclosure Requirements (E1-1 through E1-11) cross-referenced with CDP Climate Change questionnaire sections. Peer comparison data sourced from respective company sustainability reports and CDP disclosures.</p>
+  <p style="margin-top:12px;">Compiled: February 2026 · Framework: ESRS E1 + CDP Climate Change · For benchmarking purposes only</p>
+</footer>
+
+</div><!-- /page-container -->
+
+<!-- Section nav active state script -->
+<script>
+  const navLinks = document.querySelectorAll('.section-nav a');
+  const sections = document.querySelectorAll('.section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.section-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Corporation — Climate Strategy Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090C;
+    --surface: #0D1117;
+    --surface2: #131920;
+    --border: #1B2430;
+    --border-accent: #2A3A4E;
+    --text: #D1D5DB;
+    --text-muted: #6B7280;
+    --text-dim: #3E4854;
+    --heading: #F0F2F5;
+    --accent: #E8720C;
+    --accent-dim: #7A3D06;
+    --green: #22C55E;
+    --green-dim: #14532D;
+    --yellow: #EAB308;
+    --yellow-dim: #713F12;
+    --red: #EF4444;
+    --red-dim: #7F1D1D;
+    --blue: #3B82F6;
+    --blue-dim: #1E3A5F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV BAR ─────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,9,12,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar .back-link {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--accent); text-decoration: none; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar .back-link:hover { text-decoration: underline; }
+  .topbar .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.5px;
+  }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .hero {
+    padding: 64px 32px 48px;
+    max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Anybody', sans-serif; font-size: 42px;
+    font-weight: 700; color: var(--heading); letter-spacing: -1px;
+    line-height: 1.15; margin-bottom: 8px;
+  }
+  .hero-sub {
+    font-size: 16px; color: var(--text-muted); margin-bottom: 24px;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 24px;
+  }
+  .meta-chip {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 6px 14px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .meta-chip strong { color: var(--text); font-weight: 500; }
+  .meta-chip.status-good { border-color: var(--green-dim); }
+  .meta-chip.status-good strong { color: var(--green); }
+  .meta-chip.status-warn { border-color: var(--yellow-dim); }
+  .meta-chip.status-warn strong { color: var(--yellow); }
+  .meta-chip.status-bad { border-color: var(--red-dim); }
+  .meta-chip.status-bad strong { color: var(--red); }
+
+  /* ── LAYOUT ──────────────────────────────────── */
+  .page-container {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px 80px;
+  }
+
+  /* Anchor nav */
+  .section-nav {
+    position: sticky; top: 49px; z-index: 90;
+    background: rgba(7,9,12,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0; margin-bottom: 40px;
+    overflow-x: auto; white-space: nowrap;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .section-nav a {
+    display: inline-block; padding: 14px 18px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.5px; color: var(--text-dim);
+    text-decoration: none; border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .section-nav a:hover { color: var(--text-muted); }
+  .section-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Section blocks */
+  .section {
+    margin-bottom: 56px; scroll-margin-top: 120px;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'Anybody', sans-serif; font-size: 28px;
+    font-weight: 300; color: var(--text-dim);
+    min-width: 40px;
+  }
+  .section-title-group { flex: 1; }
+  .section-esrs {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; color: var(--accent-dim);
+    text-transform: uppercase; margin-bottom: 2px;
+  }
+  .section-title {
+    font-family: 'Anybody', sans-serif; font-size: 20px;
+    font-weight: 600; color: var(--heading); letter-spacing: -0.3px;
+  }
+
+  /* Maturity badge */
+  .maturity {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; padding: 5px 12px;
+    border-radius: 4px; text-transform: uppercase; font-weight: 500;
+    white-space: nowrap;
+  }
+  .maturity.comprehensive { background: var(--green-dim); color: var(--green); }
+  .maturity.partial { background: var(--yellow-dim); color: var(--yellow); }
+  .maturity.not-disclosed { background: var(--red-dim); color: var(--red); }
+
+  /* Data cards */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'Anybody', sans-serif; font-size: 32px;
+    font-weight: 600; color: var(--heading); line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .card-value.small { font-size: 22px; }
+  .card-unit {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted);
+  }
+  .card-delta {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    margin-top: 8px;
+  }
+  .card-delta.positive { color: var(--green); }
+  .card-delta.negative { color: var(--red); }
+
+  /* Prose blocks */
+  .prose { max-width: 760px; margin-bottom: 24px; }
+  .prose p { margin-bottom: 14px; color: var(--text); }
+  .prose strong { color: var(--heading); font-weight: 600; }
+  .prose em { color: var(--text-muted); }
+
+  /* Data table */
+  .data-table-wrap {
+    overflow-x: auto; margin-bottom: 24px;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .data-table th {
+    text-align: left; padding: 12px 16px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .data-table th:first-child { border-radius: 10px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 10px 0 0; }
+  .data-table td {
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(232,114,12,0.03); }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table .highlight { color: var(--accent); font-weight: 500; }
+
+  /* SVG chart container */
+  .chart-container {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px; margin-bottom: 24px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 1px; color: var(--text-muted);
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+
+  /* Bar chart */
+  .bar-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .bar-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 72px; text-align: right;
+  }
+  .bar-track {
+    flex: 1; height: 20px; background: var(--surface2);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text); min-width: 80px;
+  }
+
+  /* Roadmap / Timeline */
+  .timeline { padding-left: 24px; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 8px;
+    bottom: 8px; width: 1px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; padding: 0 0 28px 28px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -20px; top: 6px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+  }
+  .timeline-dot.done { background: var(--accent); border-color: var(--accent); }
+  .timeline-dot.current { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.4); }
+  .timeline-year {
+    font-family: 'Anybody', sans-serif; font-size: 16px;
+    font-weight: 600; color: var(--heading); margin-bottom: 4px;
+  }
+  .timeline-text {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+  }
+
+  /* Key-value detail rows */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; background: var(--surface);
+    margin-bottom: 24px;
+  }
+  .detail-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:nth-last-child(-n+2) { border-bottom: none; }
+  .detail-key {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 4px;
+  }
+  .detail-val {
+    font-size: 14px; color: var(--heading); font-weight: 400;
+  }
+  .detail-val.accent { color: var(--accent); }
+  .detail-val.green { color: var(--green); }
+  .detail-val.muted { color: var(--text-muted); font-style: italic; }
+
+  /* Source citations */
+  .source-note {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); padding: 12px 16px;
+    background: var(--surface2); border-radius: 6px;
+    margin-top: 16px; line-height: 1.6;
+  }
+  .source-note a { color: var(--accent-dim); }
+
+  /* Callout box */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(232,114,12,0.04);
+    padding: 16px 20px; border-radius: 0 8px 8px 0;
+    margin-bottom: 24px;
+  }
+  .callout p {
+    font-size: 13px; color: var(--text); line-height: 1.7;
+  }
+  .callout-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* Peer comparison mini-bar */
+  .peer-bar-wrap { margin-bottom: 24px; }
+  .peer-bar-item {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+  .peer-bar-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 110px; text-align: right;
+  }
+  .peer-bar-name.current { color: var(--accent); font-weight: 500; }
+  .peer-bar-track {
+    flex: 1; height: 10px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden; max-width: 320px;
+  }
+  .peer-bar-fill {
+    height: 100%; border-radius: 3px; background: var(--border-accent);
+  }
+  .peer-bar-fill.current { background: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  /* Footer */
+  .page-footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TOP BAR ═══════════════════════ -->
+<nav class="topbar">
+  <a href="index.html" class="back-link">← Back to Benchmark</a>
+  <span class="breadcrumb">/ Climate Benchmark / Microsoft</span>
+</nav>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<header class="hero">
+  <div class="hero-label">Company Climate Strategy Deep Dive</div>
+  <h1>Microsoft Corporation</h1>
+  <p class="hero-sub">$245B+ revenue · Public (NASDAQ: MSFT) · Redmond, WA · 228,000 employees · Global</p>
+  <div class="hero-meta">
+    <span class="meta-chip status-warn"><strong>SBTi Committed</strong></span>
+    <span class="meta-chip status-good"><strong>Carbon Negative 2030</strong></span>
+    <span class="meta-chip">Scope <strong>1 + 2 + 3</strong></span>
+    <span class="meta-chip status-good">CDP Score <strong>A-</strong></span>
+    <span class="meta-chip">Baseline <strong>2020</strong></span>
+  </div>
+</header>
+
+<!-- ═══════════════════════ SECTION NAV ═══════════════════════ -->
+<div class="page-container">
+<nav class="section-nav">
+  <a href="#transition" class="active">Transition Plan</a>
+  <a href="#emissions">Emissions</a>
+  <a href="#targets">Targets</a>
+  <a href="#energy">Energy</a>
+  <a href="#risk">Risk & Resilience</a>
+  <a href="#credits">Carbon Credits</a>
+  <a href="#financial">Financial Effects</a>
+  <a href="#governance">Governance</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1: TRANSITION PLAN (ESRS E1-1)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="transition">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-1 · CDP C3</div>
+      <div class="section-title">Transition Plan for Climate Change Mitigation</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Microsoft committed in January 2020 to be <strong>carbon negative by 2030</strong> and by 2050 to <strong>remove all carbon the company has emitted since its founding in 1975</strong>. This is one of the most ambitious climate commitments in the corporate world — going beyond net zero to a carbon negative posture that includes historical responsibility.</p>
+    <p>The strategy is underpinned by a <strong>$1B Climate Innovation Fund</strong>, an <strong>internal carbon fee applied to all business groups since 2012</strong> (expanded to include Scope 3 in 2020), and massive renewable energy procurement. However, the explosive growth of AI and cloud infrastructure is creating significant headwinds for Scope 3 reduction.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Carbon Negative</div>
+      <div class="card-value">2030</div>
+      <div class="card-unit">Removing more carbon than emitted</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Historic Removal</div>
+      <div class="card-value small">By 2050</div>
+      <div class="card-unit">All emissions since 1975</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Climate Innovation Fund</div>
+      <div class="card-value">$1B</div>
+      <div class="card-unit">$761M deployed to date</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Internal Carbon Fee</div>
+      <div class="card-value small">Since 2012</div>
+      <div class="card-unit">All scopes (expanded to S3 in 2020)</div>
+    </div>
+  </div>
+
+  <!-- Decarbonization Levers -->
+  <div class="chart-container">
+    <div class="chart-title">Key Decarbonization Levers</div>
+    <div class="bar-row">
+      <span class="bar-label">Removal</span>
+      <div class="bar-track"><div class="bar-fill" style="width:35%; background: var(--accent);"></div></div>
+      <span class="bar-value">~35% Carbon removal</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Renewables</span>
+      <div class="bar-track"><div class="bar-fill" style="width:25%; background: var(--green);"></div></div>
+      <span class="bar-value">~25% Renewable energy</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Supply Chain</span>
+      <div class="bar-track"><div class="bar-fill" style="width:20%; background: var(--blue);"></div></div>
+      <span class="bar-value">~20% Engagement</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Efficiency</span>
+      <div class="bar-track"><div class="bar-fill" style="width:15%; background: var(--yellow);"></div></div>
+      <span class="bar-value">~15% Operational</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Water</span>
+      <div class="bar-track"><div class="bar-fill" style="width:5%; background: #8B5CF6;"></div></div>
+      <span class="bar-value">~5% Water positive</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Internal Carbon Fee</div>
+      <div class="detail-val accent">Applied to ALL business groups since 2012</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scope 3 Carbon Fee</div>
+      <div class="detail-val green">Expanded to all Scope 3 in 2020</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate Innovation Fund</div>
+      <div class="detail-val">$1B committed, $761M deployed</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Unique Ambition</div>
+      <div class="detail-val accent">Carbon NEGATIVE — not just net zero</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Analyst Assessment</div>
+    <p>Microsoft's carbon negative commitment is uniquely ambitious — removing all historical emissions since 1975. The internal carbon fee (since 2012, expanded to all Scope 3 in 2020) is a model for corporate climate action. However, the explosive growth of AI and cloud infrastructure is creating significant headwinds for Scope 3 reduction. Microsoft has been transparent that it is "not yet on track" for Scope 3 targets.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft Environmental Sustainability Report 2025 · Carbon Negative Commitment (2020)
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2: GHG EMISSIONS PROFILE (ESRS E1-6)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="emissions">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-6 · CDP C6 · CDP C7</div>
+      <div class="section-title">GHG Emissions Profile</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Microsoft reports comprehensive emissions across all scopes. FY2024 data reveals a critical tension: <strong>Scope 1 and Scope 2 (market-based) are declining</strong> thanks to renewable energy procurement, but <strong>Scope 3 is increasing</strong> driven by massive AI and cloud infrastructure buildout. The company has been transparent that it is "not yet on track" for its Scope 3 targets.</p>
+    <p><em>Note: Scope 2 location-based jumped to 9.96M tCO₂e in FY2024, reflecting the true grid consumption of data center expansion — a stark contrast to the market-based figure.</em></p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Total (FY2024, Market)</div>
+      <div class="card-value">~16.2M+</div>
+      <div class="card-unit">tCO₂e (Scope 1+2+3)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 1 (FY2024)</div>
+      <div class="card-value small">143,510</div>
+      <div class="card-unit">tCO₂e — direct operations</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 2 Market (FY2024)</div>
+      <div class="card-value small">259,090</div>
+      <div class="card-unit">tCO₂e — purchased energy</div>
+      <div class="card-delta positive">↓ 34% vs. FY2023</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Scope 3 (FY2024)</div>
+      <div class="card-value small">~15.7M+</div>
+      <div class="card-unit">tCO₂e — increasing due to AI/cloud</div>
+      <div class="card-delta negative">↑ Increasing YoY</div>
+    </div>
+  </div>
+
+  <!-- Emissions trend table -->
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fiscal Year</th>
+          <th class="num">Scope 1 (kt)</th>
+          <th class="num">Scope 2 Market (kt)</th>
+          <th class="num">Scope 3 (Mt)</th>
+          <th class="num">Total (Mt)</th>
+          <th class="num">Trend</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">FY2020 (base)</td>
+          <td class="num">~150</td>
+          <td class="num">~400</td>
+          <td class="num">~12.0</td>
+          <td class="num">~12.5</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td>FY2023</td>
+          <td class="num">145</td>
+          <td class="num">393</td>
+          <td class="num">~15.7</td>
+          <td class="num">~16.2</td>
+          <td class="num" style="color:var(--red);">↑ 30% vs. baseline</td>
+        </tr>
+        <tr>
+          <td class="highlight">FY2024</td>
+          <td class="num highlight">143.5</td>
+          <td class="num highlight">259</td>
+          <td class="num" style="color:var(--red);">Increasing</td>
+          <td class="num" style="color:var(--red);">Increasing</td>
+          <td class="num" style="color:var(--yellow);">S2↓ / S3↑</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Scope 3 Category Breakdown -->
+  <div class="chart-container">
+    <div class="chart-title">Scope 3 Emissions by Category (FY2024)</div>
+    <div class="bar-row">
+      <span class="bar-label">Cat 2</span>
+      <div class="bar-track"><div class="bar-fill" style="width:37%; background: var(--accent);"></div></div>
+      <span class="bar-value">5.87M (37%) Capital Goods</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Cat 1</span>
+      <div class="bar-track"><div class="bar-fill" style="width:35%; background: var(--blue);"></div></div>
+      <span class="bar-value">5.56M (35%) Purchased Goods</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Other</span>
+      <div class="bar-track"><div class="bar-fill" style="width:27%; background: var(--text-dim);"></div></div>
+      <span class="bar-value">~4.3M (27%) Other categories</span>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Critical Observation</div>
+    <p>Microsoft's Scope 3 is <strong>increasing</strong> due to AI/cloud infrastructure buildout. The company has been transparent that it is "not yet on track" for Scope 3 reduction targets. Capital Goods (Cat 2) — representing data center construction — is now the single largest Scope 3 category at 37%, reflecting the scale of AI infrastructure investment.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft 2025 Environmental Sustainability Report · Environmental Data Fact Sheet FY2024
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3: TARGETS & PROGRESS (ESRS E1-4)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="targets">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-4 · CDP C4</div>
+      <div class="section-title">Climate Targets & Progress</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Scope</th>
+          <th>Base Year</th>
+          <th>Target Year</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>−50%+ Scope 1&2</td>
+          <td>1+2</td>
+          <td>2020</td>
+          <td>2030</td>
+          <td style="color:var(--green);">On track (S2 ↓34% YoY)</td>
+        </tr>
+        <tr>
+          <td>−50%+ Scope 3</td>
+          <td>3</td>
+          <td>2020</td>
+          <td>2030</td>
+          <td style="color:var(--red);">NOT on track (S3 increasing)</td>
+        </tr>
+        <tr>
+          <td class="highlight">Carbon Negative</td>
+          <td>1+2+3</td>
+          <td>—</td>
+          <td class="highlight">2030</td>
+          <td style="color:var(--yellow);">Requires massive removal scaling</td>
+        </tr>
+        <tr>
+          <td class="highlight">Remove All Historic Emissions</td>
+          <td>All (since 1975)</td>
+          <td>1975</td>
+          <td class="highlight">2050</td>
+          <td>Long-term commitment</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Roadmap Timeline -->
+  <div class="chart-container">
+    <div class="chart-title">Decarbonization Roadmap</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2012 — Internal Carbon Fee</div>
+        <div class="timeline-text">Microsoft becomes one of the first major corporations to introduce an internal carbon fee, applied across all business groups. Revenue funds carbon reduction and removal initiatives.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2020 — Carbon Negative Commitment</div>
+        <div class="timeline-text">Microsoft announces its carbon negative by 2030 commitment and historic removal by 2050 goal. Launches $1B Climate Innovation Fund. Expands internal carbon fee to all Scope 3 emissions.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot done"></div>
+        <div class="timeline-year">2023 — 34 GW Renewable Energy</div>
+        <div class="timeline-text">Microsoft contracts 34 GW of renewable energy across 24 countries — one of the largest corporate RE portfolios globally. Scope 2 market-based emissions begin sharp decline.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-year">2024 — Current Position</div>
+        <div class="timeline-text">Scope 1&2 declining via renewable energy procurement. Scope 3 increasing due to AI/cloud infrastructure expansion. Company acknowledges it is "not yet on track" for Scope 3 targets. ~22M mt of carbon removal contracted.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2030 — Carbon Negative</div>
+        <div class="timeline-text">Target: remove more carbon than emitted annually. Requires unprecedented scaling of carbon removal technologies (DAC, BECCS, mineralization) alongside continued emissions reduction.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2050 — Historic Removal Complete</div>
+        <div class="timeline-text">Remove all carbon Microsoft has emitted since its founding in 1975 — the most ambitious corporate historical climate responsibility commitment ever made.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">The AI Paradox</div>
+    <p>The paradox of Microsoft's climate strategy: industry-leading ambition meets the realities of exponential AI/cloud growth. Scope 1&2 are declining via renewable energy, but Scope 3 from infrastructure expansion may require unprecedented carbon removal investment. Microsoft's transparency about being "not yet on track" for Scope 3 is commendable, but the gap between ambition and trajectory is widening.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft Environmental Sustainability Report 2025 · Carbon Negative Commitment (2020) · SBTi Target Dashboard
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4: ENERGY CONSUMPTION & MIX (ESRS E1-5)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="energy">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-5 · CDP C8</div>
+      <div class="section-title">Energy Consumption & Mix</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">RE Portfolio</div>
+      <div class="card-value">34 GW</div>
+      <div class="card-unit">Contracted across 24 countries</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Target</div>
+      <div class="card-value small">100% CFE</div>
+      <div class="card-unit">Carbon-free energy by 2030</div>
+    </div>
+    <div class="card">
+      <div class="card-label">S2 Market-Based</div>
+      <div class="card-value small">↓34%</div>
+      <div class="card-unit">Year-over-year (FY2024)</div>
+      <div class="card-delta positive">RE procurement driving decline</div>
+    </div>
+    <div class="card">
+      <div class="card-label">S2 Location-Based</div>
+      <div class="card-value small">↑23%</div>
+      <div class="card-unit">Year-over-year (data center growth)</div>
+      <div class="card-delta negative">9.96M tCO₂e in FY2024</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>Microsoft holds one of the <strong>largest corporate renewable energy portfolios globally</strong> at 34 GW contracted across 24 countries. The company targets 100% carbon-free energy by 2030.</p>
+    <p>The contrast is striking: <strong>market-based Scope 2 is declining</strong> (down 34% YoY) as renewable energy procurement offsets grid consumption, while <strong>location-based Scope 2 is surging</strong> (up 23% YoY) — revealing the true scale of data center energy consumption growth. This divergence underscores that RE procurement is keeping pace with growth on paper, but actual grid demand is accelerating rapidly.</p>
+  </div>
+
+  <!-- Market vs Location contrast -->
+  <div class="chart-container">
+    <div class="chart-title">The Scope 2 Contrast — Market vs. Location-Based</div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:120px;">Market-Based</span>
+      <div class="bar-track"><div class="bar-fill" style="width:8%; background: var(--green);"></div></div>
+      <span class="bar-value">259k tCO₂e (↓34%)</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:120px;">Location-Based</span>
+      <div class="bar-track"><div class="bar-fill" style="width:100%; background: var(--red);"></div></div>
+      <span class="bar-value">9.96M tCO₂e (↑23%)</span>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft Environmental Sustainability Report 2025 · Environmental Data Fact Sheet FY2024
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 5: CLIMATE RISK & RESILIENCE (ESRS E1-2, E1-3)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="risk">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-2 · E1-3 · CDP C2</div>
+      <div class="section-title">Climate Risk Identification & Resilience</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Microsoft has conducted comprehensive climate risk analysis aligned with <strong>full TCFD recommendations</strong>. As a company with massive and growing data center infrastructure globally, Microsoft faces significant exposure to both physical risks (water stress, extreme weather, cooling demands) and transition risks (energy costs, carbon pricing, reputational concerns from AI-driven emissions growth).</p>
+  </div>
+
+  <!-- Physical Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Physical Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Type</th><th>Time Horizon</th><th>Impact Area</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Water stress at data centers</td><td>Chronic</td><td>Medium-Long</td>
+            <td>Own operations (global)</td><td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Extreme weather on infrastructure</td><td>Acute</td><td>Short-Medium</td>
+            <td>Own operations</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Cooling demands increasing</td><td>Chronic</td><td>Medium</td>
+            <td>Data centers</td><td style="color:var(--yellow);">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transition Risks -->
+  <div class="chart-container">
+    <div class="chart-title">Material Transition Risks Identified</div>
+    <div class="data-table-wrap" style="border:none; margin-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Risk</th><th>Category</th><th>Time Horizon</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rising energy costs</td><td>Market</td><td>Short-Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Regulatory carbon pricing</td><td>Policy & Legal</td><td>Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+          <tr>
+            <td>Reputational risk from AI emissions growth</td><td>Reputation</td><td>Short</td>
+            <td style="color:var(--red);">High</td>
+          </tr>
+          <tr>
+            <td>Technology transition costs</td><td>Technology</td><td>Medium</td>
+            <td style="color:var(--yellow);">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Water Positive Target</div>
+      <div class="detail-val green">By 2030 — 90+ replenishment projects contracted</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">TCFD Alignment</div>
+      <div class="detail-val green">Full alignment</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Scenario Analysis</div>
+      <div class="detail-val">Conducted — integrated into risk framework</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Key Adaptation</div>
+      <div class="detail-val">Water-efficient cooling, site diversification, grid resilience</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft Environmental Sustainability Report 2025 · CDP Climate Change Response · TCFD Disclosures
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 6: CARBON CREDITS & REMOVALS (ESRS E1-7)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="credits">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-7 · CDP C11</div>
+      <div class="section-title">Carbon Credits, Removals & Internal Carbon Fee</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Microsoft is the <strong>world's largest corporate carbon removal purchaser</strong> — this is its strongest differentiator in climate strategy. The company has contracted approximately 22 million metric tons of carbon removal across multiple durability tiers, spanning short-term neutrality needs, 2030 carbon negative targets, and long-term historic emissions removal through 2050+.</p>
+    <p>The portfolio includes three durability tiers: <strong>Low</strong> (forestry, soil carbon), <strong>Medium</strong> (biochar, CO₂ utilization), and <strong>High</strong> (direct air capture, BECCS, enhanced mineralization). Partners include <strong>Climeworks, Heirloom</strong>, and others at the frontier of carbon removal technology.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Total Contracted (FY2024)</div>
+      <div class="card-value">~22M</div>
+      <div class="card-unit">metric tons of carbon removal</div>
+    </div>
+    <div class="card">
+      <div class="card-label">In-Year Neutrality</div>
+      <div class="card-value small">1.69M</div>
+      <div class="card-unit">mt for annual offsetting</div>
+    </div>
+    <div class="card">
+      <div class="card-label">2030 Carbon Negative</div>
+      <div class="card-value small">2.80M</div>
+      <div class="card-unit">mt contracted for 2030 target</div>
+    </div>
+    <div class="card">
+      <div class="card-label">2031+ & Historic</div>
+      <div class="card-value small">17.43M</div>
+      <div class="card-unit">mt for long-term & historic removal</div>
+    </div>
+  </div>
+
+  <!-- Removal portfolio breakdown -->
+  <div class="chart-container">
+    <div class="chart-title">Carbon Removal Portfolio by Durability Tier</div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:90px;">High</span>
+      <div class="bar-track"><div class="bar-fill" style="width:40%; background: var(--green);"></div></div>
+      <span class="bar-value">DAC, BECCS, mineralization</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:90px;">Medium</span>
+      <div class="bar-track"><div class="bar-fill" style="width:30%; background: var(--blue);"></div></div>
+      <span class="bar-value">Biochar, CO₂ utilization</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label" style="min-width:90px;">Low</span>
+      <div class="bar-track"><div class="bar-fill" style="width:30%; background: var(--yellow);"></div></div>
+      <span class="bar-value">Forestry, soil carbon</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Internal Carbon Fee</div>
+      <div class="detail-val accent">Since 2012 — expanded to all Scope 3 in 2020</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Fee Revenue (3 Years)</div>
+      <div class="detail-val green">>$50M — funds carbon reduction + removals</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Long-Term Contracts</div>
+      <div class="detail-val">5M+ mt contracted over 15 years</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Key Partners</div>
+      <div class="detail-val">Climeworks, Heirloom, and others</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">World Leader in Carbon Removal</div>
+    <p>No other corporation has contracted carbon removal at this scale. Microsoft's 22M mt portfolio — spanning DAC, BECCS, biochar, enhanced mineralization, and nature-based solutions — is effectively building the carbon removal market. The internal carbon fee, generating >$50M over 3 fiscal years, creates a self-funding mechanism that directly links business group emissions to removal investment.</p>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft Carbon Removal Program · Environmental Sustainability Report 2025 · Climate Innovation Fund reports
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7: FINANCIAL EFFECTS (ESRS E1-9, E1-11)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="financial">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS E1-9 · E1-11</div>
+      <div class="section-title">Anticipated Financial Effects</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Climate Innovation Fund</div>
+      <div class="card-value">$1B</div>
+      <div class="card-unit">$761M deployed to date</div>
+    </div>
+    <div class="card">
+      <div class="card-label">RE Contracts</div>
+      <div class="card-value small">34 GW</div>
+      <div class="card-unit">Multi-billion $ in renewable energy</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Carbon Fee Revenue</div>
+      <div class="card-value small">>$50M</div>
+      <div class="card-unit">Over 3 fiscal years</div>
+    </div>
+    <div class="card">
+      <div class="card-label">CapEx</div>
+      <div class="card-value small">Tens of $B</div>
+      <div class="card-unit">Annually in cloud/AI infrastructure</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>Microsoft's climate-related financial commitments are among the largest in the corporate world. The <strong>$1B Climate Innovation Fund</strong> ($761M deployed) has invested in 48+ companies including Climeworks, Boston Metal, CarbonCure, and Applied Carbon — spanning direct air capture, clean steel, concrete, and other frontier technologies.</p>
+    <p>The 34 GW renewable energy portfolio represents multi-billion dollar commitments. Annual CapEx in cloud and AI infrastructure runs into the tens of billions, making the climate implications of infrastructure decisions enormous in scale.</p>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Portfolio Companies</div>
+      <div class="detail-val accent">48+ investments (Climeworks, Boston Metal, CarbonCure, Applied Carbon)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Fund Deployed</div>
+      <div class="detail-val green">$761M of $1B Climate Innovation Fund</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Zero Waste Progress</div>
+      <div class="detail-val green">85% diversion rate — 6 years ahead of target</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Climate Opportunities</div>
+      <div class="detail-val">Sustainability software (Cloud for Sustainability), AI for climate, carbon removal market building</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft Climate Innovation Fund reports · Environmental Sustainability Report 2025 · Annual Report FY2024
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 8: GOVERNANCE & ACCOUNTABILITY (ESRS 2 GOV)
+     ════════════════════════════════════════════════════════════ -->
+<div class="section" id="governance">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div class="section-title-group">
+      <div class="section-esrs">ESRS 2 GOV · CDP C1</div>
+      <div class="section-title">Governance & Accountability</div>
+    </div>
+    <span class="maturity comprehensive">Comprehensive</span>
+  </div>
+
+  <div class="prose">
+    <p>Microsoft's environmental governance is led by the <strong>Environmental, Social, and Public Policy Committee</strong> — an independent board committee that oversees sustainability strategy and progress. Day-to-day leadership is provided by <strong>Chief Sustainability Officer Melanie Nakagawa</strong> (appointed January 2023), who reports to Brad Smith, President & Vice Chair.</p>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-row">
+      <div class="detail-key">Board Oversight</div>
+      <div class="detail-val green">Environmental, Social, and Public Policy Committee (independent)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Chief Sustainability Officer</div>
+      <div class="detail-val green">Melanie Nakagawa (appointed Jan 2023)</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Reports To</div>
+      <div class="detail-val">Brad Smith — President & Vice Chair</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Executive Compensation</div>
+      <div class="detail-val">Sustainability referenced in executive compensation context</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Emissions Verification</div>
+      <div class="detail-val green">Deloitte & Touche LLP</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">CDP Respondent</div>
+      <div class="detail-val green">Historically A/A- range</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">Internal Carbon Fee</div>
+      <div class="detail-val accent">Applied since 2012 — all scopes since 2020</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-key">TCFD Alignment</div>
+      <div class="detail-val green">Full alignment</div>
+    </div>
+  </div>
+
+  <div class="source-note">
+    Sources: Microsoft Environmental Sustainability Report 2025 · CDP Climate Change Response · Microsoft Proxy Statement
+  </div>
+</div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="page-footer">
+  <p><strong style="color:var(--text-muted);">Data Compilation Notes</strong></p>
+  <p>Data from Microsoft Environmental Sustainability Report 2025, Data Fact Sheet FY2024, Carbon Removal Program, Climate Innovation Fund reports. Compiled February 2026.</p>
+  <p>Microsoft emissions data uses reported figures for FY2020–FY2024. Scope 3 category breakdown sourced from Environmental Data Fact Sheet. All figures in metric tons CO₂e unless otherwise noted. Market-based and location-based Scope 2 figures reported separately per GHG Protocol guidance.</p>
+  <p>Template structure aligned with ESRS E1 Disclosure Requirements (E1-1 through E1-11) cross-referenced with CDP Climate Change questionnaire sections.</p>
+  <p style="margin-top:12px;">Compiled: February 2026 · Framework: ESRS E1 + CDP Climate Change · For benchmarking purposes only</p>
+</footer>
+
+</div><!-- /page-container -->
+
+<!-- Section nav active state script -->
+<script>
+  const navLinks = document.querySelectorAll('.section-nav a');
+  const sections = document.querySelectorAll('.section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.section-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
