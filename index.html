@@ -394,15 +394,84 @@
     color: var(--text-dim); line-height: 1.8;
   }
 
+  /* ── GRADE BADGES ──────────────────────── */
+  .grade-badge {
+    font-family: 'Anybody', sans-serif; font-size: 16px;
+    font-weight: 700; display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 8px;
+    letter-spacing: -0.5px; line-height: 1;
+  }
+  .grade-badge.sm { width: 26px; height: 26px; font-size: 12px; border-radius: 5px; }
+  .grade-A { background: var(--green-dim); color: var(--green); }
+  .grade-B { background: var(--blue-dim); color: var(--blue); }
+  .grade-C { background: var(--yellow-dim); color: var(--yellow); }
+  .grade-D { background: var(--accent-dim); color: var(--accent); }
+  .grade-F { background: var(--red-dim); color: var(--red); }
+
+  .grade-score {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); margin-left: 6px;
+  }
+
+  /* ── RANKING BAR ─────────────────────────── */
+  .ranking-item {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .ranking-rank {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); min-width: 22px; text-align: right;
+  }
+  .ranking-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); min-width: 130px; text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ranking-name.has-deepdive { color: var(--accent); cursor: pointer; }
+  .ranking-name.has-deepdive:hover { text-decoration: underline; }
+  .ranking-track {
+    flex: 1; height: 22px; background: var(--surface2);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  .ranking-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1.2s ease;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 8px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: rgba(255,255,255,0.8); font-weight: 500;
+  }
+
+  /* ── METHODOLOGY ─────────────────────────── */
+  .methodology-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 24px;
+  }
+  .methodology-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+  }
+  .methodology-item .card-label { margin-bottom: 4px; }
+  .methodology-weight {
+    font-family: 'Anybody', sans-serif; font-size: 20px;
+    font-weight: 600; color: var(--heading); margin-bottom: 2px;
+  }
+  .methodology-desc {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.5;
+  }
+
   /* ── RESPONSIVE ─────────────────────────── */
   @media (max-width: 768px) {
     .charts-row { grid-template-columns: 1fr; }
     .card-grid { grid-template-columns: 1fr 1fr; }
     .detail-highlights { grid-template-columns: 1fr; }
     .detail-grid { grid-template-columns: 1fr; }
+    .methodology-grid { grid-template-columns: 1fr 1fr; }
     .hero h1 { font-size: 28px; }
     .hero { padding: 40px 20px 32px; }
     .page-container { padding: 0 20px 60px; }
+    .ranking-name { min-width: 90px; font-size: 10px; }
   }
 </style>
 </head>
@@ -412,82 +481,136 @@
 <script type="text/babel">
   const { useState, useEffect, useRef } = React;
 
+  /* ═══════════════════════════════════════════════════════
+     MATURITY SCORING METHODOLOGY
+     6 Pillars, each scored 0-100
+     Composite = weighted average with these weights:
+       Governance 15%, Targets 20%, Disclosure 20%,
+       Transition 20%, Risk 10%, Action 15%
+     ═══════════════════════════════════════════════════════ */
+  const PILLAR_LABELS = ["Governance", "Targets", "Disclosure", "Transition", "Risk", "Action"];
+  const PILLAR_WEIGHTS = [0.15, 0.20, 0.20, 0.20, 0.10, 0.15];
+
+  function getComposite(p) {
+    return Math.round(p[0]*PILLAR_WEIGHTS[0] + p[1]*PILLAR_WEIGHTS[1] + p[2]*PILLAR_WEIGHTS[2] + p[3]*PILLAR_WEIGHTS[3] + p[4]*PILLAR_WEIGHTS[4] + p[5]*PILLAR_WEIGHTS[5]);
+  }
+  function getGrade(score) {
+    if (score >= 80) return "A";
+    if (score >= 60) return "B";
+    if (score >= 40) return "C";
+    if (score >= 20) return "D";
+    return "F";
+  }
+  function gradeColor(grade) {
+    return { A: "var(--green)", B: "var(--blue)", C: "var(--yellow)", D: "var(--accent)", F: "var(--red)" }[grade] || "var(--text-dim)";
+  }
+  function gradeFillColor(grade) {
+    return { A: "#22C55E", B: "#3B82F6", C: "#EAB308", D: "#E8720C", F: "#EF4444" }[grade] || "#3E4854";
+  }
+
   /* ───────── DATA ───────── */
   const companies = [
-    { company: "Herbalife", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "2024", scope12: true, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["First climate scenario analysis (2025 TCFD)", "9/50 facilities use renewable electricity", "80% supplier assessments by 2025", "322 MT plastic removed"], lastUpdated: "2025",
-      reportUrl: "https://ir.herbalife.com/sustainability", reportLabel: "2025 Climate Risk Report" },
-    { company: "Mars", netZeroTarget: "2050", interimTarget2030: "50% absolute (all scopes)", baselineYear: "2015", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "2040",
-      highlights: ["16.4% absolute reduction achieved", "58% renewable electricity", "$1B+ net-zero investment", "60+ climate-smart ag projects"], lastUpdated: "2024",
-      reportUrl: "https://www.mars.com/sustainability-plan/sustainability-reports", reportLabel: "2024 Sustainability Report",
-      deepDive: "mars-climate-deepdive.html" },
-    { company: "Kellanova", netZeroTarget: "2050", interimTarget2030: "Setting (SBTi committed)", baselineYear: "2015", scope12: true, scope3: true, sbtiStatus: "Committed - Net-Zero", reTarget: "100%", reTargetYear: "2030",
-      highlights: ["Better Days Promise (4B people by 2030)", "SBTi Net-Zero committed Nov 2023", "30% water reduction in high-stress regions", "Pending Mars acquisition (2025)"], lastUpdated: "2023",
-      reportUrl: "https://betterdayspromise.kellanova.com/sustainability", reportLabel: "Better Days Promise",
-      deepDive: "kellanova-climate-deepdive.html" },
-    { company: "Nu Skin", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["100% products environmentally assessed", "All packaging recyclable/reusable by 2030", "100% RSPO palm sourcing", "40 tons plastic reduced"], lastUpdated: "2024",
-      reportUrl: "https://ir.nuskin.com/financial-information/annual-reports/", reportLabel: "2024 Sustainability Report" },
-    { company: "USANA", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["58% SLC campus from solar/RECs", "57% operational waste diverted", "300K+ bottles of plastic saved", "SASB & UN SDGs aligned"], lastUpdated: "2024",
-      reportUrl: "https://ir.usana.com/news-events/press-releases/detail/784/usana-releases-2024-sustainability-report", reportLabel: "2024 Sustainability Report" },
-    { company: "Amway", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["Wind power at Michigan HQ", "Solar at China manufacturing", "~6000 acres certified organic farmland", "234K lbs virgin plastic saved (2024)"], lastUpdated: "2024",
-      reportUrl: "https://www.amwayglobal.com/impact-report/", reportLabel: "2024 Impact Report" },
-    { company: "Medifast", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["No standalone ESG report", "Sustainalytics ESG Risk Rating 34.8 (High)", "Industry rank 97/104", "No formal climate targets"], lastUpdated: "2024",
-      reportUrl: "https://www.sustainalytics.com/esg-rating/medifast-inc/1008239122", reportLabel: "Sustainalytics ESG Rating" },
-    { company: "BellRing Brands", netZeroTarget: "2030", interimTarget2030: "Net-zero Scope 1&2 by 2030", baselineYear: "2019", scope12: true, scope3: false, sbtiStatus: "None", reTarget: "100%", reTargetYear: "2025",
-      highlights: ["Scope 1 reduced 490→228 MTCO2e", "Scope 2 reduced 1491→70 MTCO2e", "100% renewable electricity by 2025", "Supplier engagement on emissions"], lastUpdated: "2024",
-      reportUrl: "https://bellring.com/energy-use", reportLabel: "2024 Impact Report" },
-    { company: "Simply Good Foods", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: true, scope3: true, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["Full GHG inventory (all scopes)", "LEED EB O&M Gold certifications", "Energy Star certified HQ", "Board-level ESG oversight"], lastUpdated: "2024",
-      reportUrl: "https://www.thesimplygoodfoodscompany.com/investor-overview", reportLabel: "2024 Impact Update" },
-    { company: "Post Holdings", netZeroTarget: "Not disclosed", interimTarget2030: "30% S1&2; 30% S3 intensity", baselineYear: "FY2020", scope12: true, scope3: true, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["15% Scope 1&2 reduction achieved", "CDP Score B / A- supplier engagement", "92% landfill diversion", "TCFD/GRI/SASB aligned"], lastUpdated: "2025",
-      reportUrl: "https://www.postholdings.com/post-holdings-2025-sustainability-report/", reportLabel: "2025 Sustainability Report" },
-    { company: "Hain Celestial", netZeroTarget: "Not disclosed", interimTarget2030: "42% S1&2; 25% S3", baselineYear: "FY2022", scope12: true, scope3: true, sbtiStatus: "Committed", reTarget: "100%", reTargetYear: "2025",
-      highlights: ["42% Scope 1&2 reduction by FY2030", "Fruit waste-to-biogas at UK plant", "100% renewable energy by 2025", "Sustainalytics ESG Risk Rating 31.3"], lastUpdated: "2023",
-      reportUrl: "https://www.hain.com/impact/esg-reports/", reportLabel: "2023 Impact Report",
-      deepDive: "hain-celestial-climate-deepdive.html" },
-    { company: "Isagenix", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["Zero-waste packaging by 2028", ">50% bottles to 100% PCR plastic", "HQ solar ~463K kWh/yr", "3.2M sq ft cardboard saved/yr"], lastUpdated: "2024",
-      reportUrl: "https://www.isagenixhealth.net/sustainable-changes-for-a-healthier-planet/", reportLabel: "Sustainability Page" },
-    { company: "Shaklee", netZeroTarget: "Carbon neutral since 2000", interimTarget2030: "Beyond Carbon Neutral (all Scope 3)", baselineYear: "2000", scope12: true, scope3: false, sbtiStatus: "None", reTarget: "100%", reTargetYear: "Achieved",
-      highlights: ["First certified Climate Neutral company", "100% renewable energy via RECs", "100% Scope 1&2 offset (Gold Standard)", "Third-party GHG inventory annually"], lastUpdated: "2023",
-      reportUrl: "https://us.shaklee.com/en_US/s/climate-change", reportLabel: "Climate Change Page" },
-    { company: "GNC", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["No public ESG report", "Acquired by Harbin Pharmaceutical (2020)", "Now private, limited disclosure", "No formal climate targets"], lastUpdated: "N/A",
-      reportUrl: null, reportLabel: null },
-    { company: "Nestlé", netZeroTarget: "2050", interimTarget2030: "50.4% absolute (all scopes)", baselineYear: "2018", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "2025",
-      highlights: ["CHF 3.2B climate investment committed", "50.4% reduction target by 2030 (SBTi 1.5°C)", "49.3% renewable electricity (RE100)", "CHF 1.2B in regenerative agriculture"], lastUpdated: "2024",
-      reportUrl: "https://www.nestle.com/sustainability/climate-change", reportLabel: "2024 Sustainability Report",
-      deepDive: "nestle-climate-deepdive.html" },
-    { company: "Danone", netZeroTarget: "2050", interimTarget2030: "46.3% S1&2; 42% S3; 30.3% FLAG", baselineYear: "2020", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "2030",
-      highlights: ["CDP Triple A — 5th consecutive year", "First SBTi FLAG targets approved", "30% methane reduction from dairy by 2030", "58,000+ farmer partners across 20 countries"], lastUpdated: "2024",
-      reportUrl: "https://www.danone.com/impact/planet/climate-actions.html", reportLabel: "2024 Integrated Annual Report",
-      deepDive: "danone-climate-deepdive.html" },
-    { company: "Abbott", netZeroTarget: "Not disclosed", interimTarget2030: "30% S1&2 absolute", baselineYear: "2018", scope12: true, scope3: true, sbtiStatus: "Committed", reTarget: "Not disclosed", reTargetYear: "N/A",
-      highlights: ["SBTi committed (well-below 2°C)", "~35% renewable electricity", "20+ year DJSI inclusion", "9 years third-party GHG assurance"], lastUpdated: "2024",
-      reportUrl: "https://www.abbott.com/responsibility/sustainability.html", reportLabel: "2024 Sustainability Report",
-      deepDive: "abbott-climate-deepdive.html" },
-    { company: "Unilever", netZeroTarget: "2039", interimTarget2030: "Zero S1&2; 42% S3 energy; 30.3% FLAG", baselineYear: "2015", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "Achieved",
-      highlights: ["Net zero by 2039 — most aggressive in CPG", "100% RE electricity since 2020 (RE100 founder)", "CTAP approved by 97.5% of shareholders", ">EUR 1B saved through energy efficiency"], lastUpdated: "2024",
-      reportUrl: "https://www.unilever.com/sustainability/climate/our-climate-transition-action-plan/", reportLabel: "2024 Climate Transition Action Plan",
-      deepDive: "unilever-climate-deepdive.html" },
-    { company: "Nike", netZeroTarget: "Not formally set", interimTarget2030: "65% S1&2; 30% S3 intensity", baselineYear: "FY2020", scope12: true, scope3: true, sbtiStatus: "Validated", reTarget: "100%", reTargetYear: "Achieved",
-      highlights: ["96% renewable electricity globally", "69% reduction in Scope 1&2 vs FY2020", "Move to Zero campaign", "RE100 member, LEED-certified distribution"], lastUpdated: "2024",
-      reportUrl: "https://www.nike.com/sustainability", reportLabel: "FY2024 Impact Report",
-      deepDive: "nike-climate-deepdive.html" },
-    { company: "IKEA", netZeroTarget: "Climate Positive 2030", interimTarget2030: "50% absolute GHG reduction", baselineYear: "FY2016", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "Achieved",
-      highlights: ["Climate positive by 2030 target", "EUR 7.5B+ invested in renewable energy", "935,000+ solar panels, 547 wind turbines", "Explicitly rejects carbon offsets"], lastUpdated: "2024",
-      reportUrl: "https://www.inter.ikea.com/en/performance/climate-report", reportLabel: "2024 Climate Report",
-      deepDive: "ikea-climate-deepdive.html" },
     { company: "Microsoft", netZeroTarget: "Carbon Negative 2030", interimTarget2030: "50%+ all scopes; carbon negative", baselineYear: "2020", scope12: true, scope3: true, sbtiStatus: "Committed", reTarget: "100%", reTargetYear: "2030",
       highlights: ["Carbon negative by 2030 commitment", "34 GW renewable energy contracted", "$1B Climate Innovation Fund", "World's largest corporate carbon removal buyer (~22M mt)"], lastUpdated: "2024",
       reportUrl: "https://www.microsoft.com/en-us/corporate-responsibility/sustainability/report", reportLabel: "2025 Environmental Sustainability Report",
-      deepDive: "microsoft-climate-deepdive.html" },
+      deepDive: "microsoft-climate-deepdive.html",
+      pillars: [92, 87, 100, 100, 93, 83] },
+    { company: "Mars", netZeroTarget: "2050", interimTarget2030: "50% absolute (all scopes)", baselineYear: "2015", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "2040",
+      highlights: ["16.4% absolute reduction achieved", "58% renewable electricity", "$1B+ net-zero investment", "60+ climate-smart ag projects"], lastUpdated: "2024",
+      reportUrl: "https://www.mars.com/sustainability-plan/sustainability-reports", reportLabel: "2024 Sustainability Report",
+      deepDive: "mars-climate-deepdive.html",
+      pillars: [100, 100, 89, 93, 67, 83] },
+    { company: "Danone", netZeroTarget: "2050", interimTarget2030: "46.3% S1&2; 42% S3; 30.3% FLAG", baselineYear: "2020", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "2030",
+      highlights: ["CDP Triple A — 5th consecutive year", "First SBTi FLAG targets approved", "30% methane reduction from dairy by 2030", "58,000+ farmer partners across 20 countries"], lastUpdated: "2024",
+      reportUrl: "https://www.danone.com/impact/planet/climate-actions.html", reportLabel: "2024 Integrated Annual Report",
+      deepDive: "danone-climate-deepdive.html",
+      pillars: [100, 100, 100, 73, 93, 75] },
+    { company: "IKEA", netZeroTarget: "Climate Positive 2030", interimTarget2030: "50% absolute GHG reduction", baselineYear: "FY2016", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "Achieved",
+      highlights: ["Climate positive by 2030 target", "EUR 7.5B+ invested in renewable energy", "935,000+ solar panels, 547 wind turbines", "Explicitly rejects carbon offsets"], lastUpdated: "2024",
+      reportUrl: "https://www.inter.ikea.com/en/performance/climate-report", reportLabel: "2024 Climate Report",
+      deepDive: "ikea-climate-deepdive.html",
+      pillars: [92, 100, 94, 80, 60, 100] },
+    { company: "Unilever", netZeroTarget: "2039", interimTarget2030: "Zero S1&2; 42% S3 energy; 30.3% FLAG", baselineYear: "2015", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "Achieved",
+      highlights: ["Net zero by 2039 — most aggressive in CPG", "100% RE electricity since 2020 (RE100 founder)", "CTAP approved by 97.5% of shareholders", ">EUR 1B saved through energy efficiency"], lastUpdated: "2024",
+      reportUrl: "https://www.unilever.com/sustainability/climate/our-climate-transition-action-plan/", reportLabel: "2024 Climate Transition Action Plan",
+      deepDive: "unilever-climate-deepdive.html",
+      pillars: [100, 100, 78, 73, 93, 92] },
+    { company: "Nestlé", netZeroTarget: "2050", interimTarget2030: "50.4% absolute (all scopes)", baselineYear: "2018", scope12: true, scope3: true, sbtiStatus: "Validated - Net-Zero", reTarget: "100%", reTargetYear: "2025",
+      highlights: ["CHF 3.2B climate investment committed", "50.4% reduction target by 2030 (SBTi 1.5°C)", "49.3% renewable electricity (RE100)", "CHF 1.2B in regenerative agriculture"], lastUpdated: "2024",
+      reportUrl: "https://www.nestle.com/sustainability/climate-change", reportLabel: "2024 Sustainability Report",
+      deepDive: "nestle-climate-deepdive.html",
+      pillars: [83, 100, 89, 87, 60, 75] },
+    { company: "Nike", netZeroTarget: "Not formally set", interimTarget2030: "65% S1&2; 30% S3 intensity", baselineYear: "FY2020", scope12: true, scope3: true, sbtiStatus: "Validated", reTarget: "100%", reTargetYear: "Achieved",
+      highlights: ["96% renewable electricity globally", "69% reduction in Scope 1&2 vs FY2020", "Move to Zero campaign", "RE100 member, LEED-certified distribution"], lastUpdated: "2024",
+      reportUrl: "https://www.nike.com/sustainability", reportLabel: "FY2024 Impact Report",
+      deepDive: "nike-climate-deepdive.html",
+      pillars: [83, 80, 94, 47, 53, 83] },
+    { company: "Kellanova", netZeroTarget: "2050", interimTarget2030: "Setting (SBTi committed)", baselineYear: "2015", scope12: true, scope3: true, sbtiStatus: "Committed - Net-Zero", reTarget: "100%", reTargetYear: "2030",
+      highlights: ["Better Days Promise (4B people by 2030)", "SBTi Net-Zero committed Nov 2023", "30% water reduction in high-stress regions", "Pending Mars acquisition (2025)"], lastUpdated: "2023",
+      reportUrl: "https://betterdayspromise.kellanova.com/sustainability", reportLabel: "Better Days Promise",
+      deepDive: "kellanova-climate-deepdive.html",
+      pillars: [58, 73, 83, 47, 53, 50] },
+    { company: "Post Holdings", netZeroTarget: "Not disclosed", interimTarget2030: "30% S1&2; 30% S3 intensity", baselineYear: "FY2020", scope12: true, scope3: true, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["15% Scope 1&2 reduction achieved", "CDP Score B / A- supplier engagement", "92% landfill diversion", "TCFD/GRI/SASB aligned"], lastUpdated: "2025",
+      reportUrl: "https://www.postholdings.com/post-holdings-2025-sustainability-report/", reportLabel: "2025 Sustainability Report",
+      pillars: [50, 33, 83, 27, 33, 25] },
+    { company: "Hain Celestial", netZeroTarget: "Not disclosed", interimTarget2030: "42% S1&2; 25% S3", baselineYear: "FY2022", scope12: true, scope3: true, sbtiStatus: "Committed", reTarget: "100%", reTargetYear: "2025",
+      highlights: ["42% Scope 1&2 reduction by FY2030", "Fruit waste-to-biogas at UK plant", "100% renewable energy by 2025", "Sustainalytics ESG Risk Rating 31.3"], lastUpdated: "2023",
+      reportUrl: "https://www.hain.com/impact/esg-reports/", reportLabel: "2023 Impact Report",
+      deepDive: "hain-celestial-climate-deepdive.html",
+      pillars: [25, 53, 67, 33, 20, 42] },
+    { company: "Abbott", netZeroTarget: "Not disclosed", interimTarget2030: "30% S1&2 absolute", baselineYear: "2018", scope12: true, scope3: true, sbtiStatus: "Committed", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["SBTi committed (well-below 2°C)", "~35% renewable electricity", "20+ year DJSI inclusion", "9 years third-party GHG assurance"], lastUpdated: "2024",
+      reportUrl: "https://www.abbott.com/responsibility/sustainability.html", reportLabel: "2024 Sustainability Report",
+      deepDive: "abbott-climate-deepdive.html",
+      pillars: [50, 33, 72, 20, 27, 33] },
+    { company: "BellRing Brands", netZeroTarget: "2030", interimTarget2030: "Net-zero Scope 1&2 by 2030", baselineYear: "2019", scope12: true, scope3: false, sbtiStatus: "None", reTarget: "100%", reTargetYear: "2025",
+      highlights: ["Scope 1 reduced 490→228 MTCO2e", "Scope 2 reduced 1491→70 MTCO2e", "100% renewable electricity by 2025", "Supplier engagement on emissions"], lastUpdated: "2024",
+      reportUrl: "https://bellring.com/energy-use", reportLabel: "2024 Impact Report",
+      pillars: [17, 33, 50, 20, 0, 58] },
+    { company: "Shaklee", netZeroTarget: "Carbon neutral since 2000", interimTarget2030: "Beyond Carbon Neutral (all Scope 3)", baselineYear: "2000", scope12: true, scope3: false, sbtiStatus: "None", reTarget: "100%", reTargetYear: "Achieved",
+      highlights: ["First certified Climate Neutral company", "100% renewable energy via RECs", "100% Scope 1&2 offset (Gold Standard)", "Third-party GHG inventory annually"], lastUpdated: "2023",
+      reportUrl: "https://us.shaklee.com/en_US/s/climate-change", reportLabel: "Climate Change Page",
+      pillars: [17, 33, 39, 13, 0, 42] },
+    { company: "Herbalife", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "2024", scope12: true, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["First climate scenario analysis (2025 TCFD)", "9/50 facilities use renewable electricity", "80% supplier assessments by 2025", "322 MT plastic removed"], lastUpdated: "2025",
+      reportUrl: "https://ir.herbalife.com/sustainability", reportLabel: "2025 Climate Risk Report",
+      pillars: [17, 7, 28, 7, 27, 8] },
+    { company: "Simply Good Foods", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: true, scope3: true, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["Full GHG inventory (all scopes)", "LEED EB O&M Gold certifications", "Energy Star certified HQ", "Board-level ESG oversight"], lastUpdated: "2024",
+      reportUrl: "https://www.thesimplygoodfoodscompany.com/investor-overview", reportLabel: "2024 Impact Update",
+      pillars: [17, 13, 39, 0, 0, 0] },
+    { company: "USANA", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["58% SLC campus from solar/RECs", "57% operational waste diverted", "300K+ bottles of plastic saved", "SASB & UN SDGs aligned"], lastUpdated: "2024",
+      reportUrl: "https://ir.usana.com/news-events/press-releases/detail/784/usana-releases-2024-sustainability-report", reportLabel: "2024 Sustainability Report",
+      pillars: [8, 0, 0, 7, 0, 17] },
+    { company: "Amway", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["Wind power at Michigan HQ", "Solar at China manufacturing", "~6000 acres certified organic farmland", "234K lbs virgin plastic saved (2024)"], lastUpdated: "2024",
+      reportUrl: "https://www.amwayglobal.com/impact-report/", reportLabel: "2024 Impact Report",
+      pillars: [8, 0, 0, 7, 0, 8] },
+    { company: "Nu Skin", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["100% products environmentally assessed", "All packaging recyclable/reusable by 2030", "100% RSPO palm sourcing", "40 tons plastic reduced"], lastUpdated: "2024",
+      reportUrl: "https://ir.nuskin.com/financial-information/annual-reports/", reportLabel: "2024 Sustainability Report",
+      pillars: [0, 0, 0, 7, 0, 8] },
+    { company: "Isagenix", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["Zero-waste packaging by 2028", ">50% bottles to 100% PCR plastic", "HQ solar ~463K kWh/yr", "3.2M sq ft cardboard saved/yr"], lastUpdated: "2024",
+      reportUrl: "https://www.isagenixhealth.net/sustainable-changes-for-a-healthier-planet/", reportLabel: "Sustainability Page",
+      pillars: [0, 0, 0, 7, 0, 8] },
+    { company: "Medifast", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["No standalone ESG report", "Sustainalytics ESG Risk Rating 34.8 (High)", "Industry rank 97/104", "No formal climate targets"], lastUpdated: "2024",
+      reportUrl: "https://www.sustainalytics.com/esg-rating/medifast-inc/1008239122", reportLabel: "Sustainalytics ESG Rating",
+      pillars: [0, 0, 0, 0, 0, 0] },
+    { company: "GNC", netZeroTarget: "Not disclosed", interimTarget2030: "Not disclosed", baselineYear: "Not disclosed", scope12: false, scope3: false, sbtiStatus: "None", reTarget: "Not disclosed", reTargetYear: "N/A",
+      highlights: ["No public ESG report", "Acquired by Harbin Pharmaceutical (2020)", "Now private, limited disclosure", "No formal climate targets"], lastUpdated: "N/A",
+      reportUrl: null, reportLabel: null,
+      pillars: [0, 0, 0, 0, 0, 0] },
   ];
+
+  /* Add computed scores */
+  companies.forEach(c => {
+    c.composite = getComposite(c.pillars);
+    c.grade = getGrade(c.composite);
+  });
 
   /* ───────── DERIVED STATS ───────── */
   const total = companies.length;
@@ -497,6 +620,12 @@
   const withRE = companies.filter(c => c.reTarget === "100%").length;
   const withInterim = companies.filter(c => c.interimTarget2030 !== "Not disclosed").length;
   const pct = (n) => Math.round((n / total) * 100) + "%";
+  const avgScore = Math.round(companies.reduce((s, c) => s + c.composite, 0) / total);
+
+  const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+  companies.forEach(c => gradeDistribution[c.grade]++);
+
+  const ranked = [...companies].sort((a, b) => b.composite - a.composite);
 
   const activeCompanies = companies.filter(c =>
     c.scope12 || c.scope3 ||
@@ -504,7 +633,7 @@
     c.interimTarget2030 !== "Not disclosed" ||
     c.sbtiStatus !== "None" ||
     c.reTarget === "100%"
-  );
+  ).sort((a, b) => b.composite - a.composite);
 
   /* ───────── CHART DEFAULTS ───────── */
   Chart.defaults.color = "#6B7280";
@@ -512,7 +641,7 @@
   Chart.defaults.font.family = "IBM Plex Mono";
 
   /* ───────── CHART COMPONENT ───────── */
-  function ChartCanvas({ id, type, data, options }) {
+  function ChartCanvas({ id, type, data, options, redrawKey }) {
     const canvasRef = useRef(null);
     const chartRef = useRef(null);
     useEffect(() => {
@@ -520,37 +649,19 @@
       const ctx = canvasRef.current.getContext("2d");
       chartRef.current = new Chart(ctx, { type, data, options });
       return () => { if (chartRef.current) chartRef.current.destroy(); };
-    }, []);
+    }, [redrawKey]);
     return <canvas ref={canvasRef} id={id}></canvas>;
   }
 
-  /* ───────── CHART DATA ───────── */
-  const sbtiChartData = {
-    labels: ["Validated", "Committed", "None"],
+  /* ───────── GRADE DISTRIBUTION CHART ───────── */
+  const gradeChartData = {
+    labels: ["A (80-100)", "B (60-79)", "C (40-59)", "D (20-39)", "F (0-19)"],
     datasets: [{
-      data: [
-        companies.filter(c => c.sbtiStatus.startsWith("Validated")).length,
-        companies.filter(c => c.sbtiStatus.startsWith("Committed") && !c.sbtiStatus.startsWith("Validated")).length,
-        companies.filter(c => c.sbtiStatus === "None").length,
-      ],
-      backgroundColor: ["#22C55E", "#EAB308", "#3E4854"],
+      data: [gradeDistribution.A, gradeDistribution.B, gradeDistribution.C, gradeDistribution.D, gradeDistribution.F],
+      backgroundColor: ["#22C55E", "#3B82F6", "#EAB308", "#E8720C", "#EF4444"],
       borderWidth: 0, hoverOffset: 8,
     }],
   };
-
-  const scopeChartData = {
-    labels: ["Scope 1&2 + Scope 3", "Scope 1&2 Only", "No Disclosure"],
-    datasets: [{
-      data: [
-        companies.filter(c => c.scope12 && c.scope3).length,
-        companies.filter(c => c.scope12 && !c.scope3).length,
-        companies.filter(c => !c.scope12 && !c.scope3).length,
-      ],
-      backgroundColor: ["#22C55E", "#3B82F6", "#3E4854"],
-      borderWidth: 0, hoverOffset: 8,
-    }],
-  };
-
   const pieOptions = {
     responsive: true,
     plugins: {
@@ -560,16 +671,21 @@
   };
 
   /* ───────── SMALL COMPONENTS ───────── */
+  function GradeBadge({ grade, score, size }) {
+    return (
+      <span style={{display: "inline-flex", alignItems: "center"}}>
+        <span className={`grade-badge ${size === "sm" ? "sm" : ""} grade-${grade}`}>{grade}</span>
+        {score !== undefined && <span className="grade-score">{score}</span>}
+      </span>
+    );
+  }
+
   function SBTiBadge({ status }) {
     const cls = status.startsWith("Validated") ? "maturity validated"
       : status.startsWith("Committed") ? "maturity committed" : "maturity none";
     const label = status.startsWith("Validated") ? "Validated"
       : status.startsWith("Committed") ? "Committed" : "None";
     return <span className={cls}>{label}</span>;
-  }
-
-  function ScopeBadge({ active, label }) {
-    return <span className={active ? "scope-badge active" : "scope-badge inactive"}>{label}</span>;
   }
 
   const ExternalIcon = () => (
@@ -592,6 +708,35 @@
       }
     };
 
+    /* Radar chart data for selected company */
+    const radarData = selected ? {
+      labels: PILLAR_LABELS,
+      datasets: [{
+        label: selected.company,
+        data: selected.pillars,
+        backgroundColor: "rgba(232,114,12,0.15)",
+        borderColor: "#E8720C",
+        borderWidth: 2,
+        pointBackgroundColor: "#E8720C",
+        pointBorderColor: "#E8720C",
+        pointRadius: 4,
+      }],
+    } : null;
+
+    const radarOptions = {
+      responsive: true,
+      scales: {
+        r: {
+          beginAtZero: true, max: 100,
+          grid: { color: "#1B2430" },
+          angleLines: { color: "#1B2430" },
+          pointLabels: { font: { size: 10, family: "IBM Plex Mono" }, color: "#6B7280" },
+          ticks: { stepSize: 25, display: false },
+        },
+      },
+      plugins: { legend: { display: false } },
+    };
+
     return (
       <div>
         {/* Top Bar */}
@@ -604,14 +749,14 @@
         <header className="hero">
           <div className="hero-label">Sector Climate Intelligence</div>
           <h1>Climate Benchmark Dashboard</h1>
-          <p className="hero-sub">Sustainability & net-zero commitments across {total} companies spanning health, nutrition, CPG, retail & technology</p>
+          <p className="hero-sub">Disclosure maturity & net-zero commitments across {total} companies spanning health, nutrition, CPG, retail & technology</p>
           <div className="hero-meta">
             <span className="meta-chip"><strong>{total}</strong> companies tracked</span>
-            <span className="meta-chip"><strong>{withNetZero}</strong> net-zero targets</span>
+            <span className="meta-chip"><strong>{avgScore}/100</strong> avg maturity</span>
+            <span className="meta-chip"><strong>{gradeDistribution.A}</strong> A-grade leaders</span>
             <span className="meta-chip"><strong>{withSBTi}</strong> SBTi engaged</span>
             <span className="meta-chip"><strong>{withScope3}</strong> Scope 3 reported</span>
-            <span className="meta-chip"><strong>{withRE}</strong> with 100% RE target</span>
-            <span className="meta-chip"><strong>{withInterim}</strong> with 2030 interim targets</span>
+            <span className="meta-chip"><strong>{withInterim}</strong> with 2030 targets</span>
           </div>
         </header>
 
@@ -621,7 +766,7 @@
           {/* Section nav */}
           <nav className="section-nav">
             <a href="#overview" className="active">Overview</a>
-            <a href="#sbti">SBTi & Scope</a>
+            <a href="#ranking">Maturity Ranking</a>
             <a href="#breakdown">Company Breakdown</a>
           </nav>
 
@@ -637,61 +782,94 @@
 
             <div className="card-grid">
               <div className="card">
-                <div className="card-label">Companies Tracked</div>
-                <div className="card-value">{total}</div>
-                <div className="card-unit">Cross-sector benchmark</div>
+                <div className="card-label">Average Maturity</div>
+                <div className="card-value" style={{color: gradeColor(getGrade(avgScore))}}>{avgScore}<span style={{fontSize: 18, marginLeft: 4}}>/ 100</span></div>
+                <div className="card-unit">Grade: {getGrade(avgScore)}</div>
               </div>
               <div className="card">
-                <div className="card-label">Net-Zero Targets</div>
-                <div className="card-value" style={{color: "var(--green)"}}>{withNetZero}</div>
-                <div className="card-unit">{pct(withNetZero)} of total</div>
+                <div className="card-label">A-Grade Leaders</div>
+                <div className="card-value" style={{color: "var(--green)"}}>{gradeDistribution.A}</div>
+                <div className="card-unit">{pct(gradeDistribution.A)} of total</div>
               </div>
               <div className="card">
-                <div className="card-label">SBTi Engaged</div>
-                <div className="card-value" style={{color: "var(--yellow)"}}>{withSBTi}</div>
-                <div className="card-unit">{pct(withSBTi)} of total</div>
+                <div className="card-label">B-Grade Advanced</div>
+                <div className="card-value" style={{color: "var(--blue)"}}>{gradeDistribution.B}</div>
+                <div className="card-unit">{pct(gradeDistribution.B)} of total</div>
               </div>
               <div className="card">
-                <div className="card-label">Scope 3 Reported</div>
-                <div className="card-value" style={{color: "var(--blue)"}}>{withScope3}</div>
-                <div className="card-unit">{pct(withScope3)} of total</div>
+                <div className="card-label">C/D Developing</div>
+                <div className="card-value" style={{color: "var(--yellow)"}}>{gradeDistribution.C + gradeDistribution.D}</div>
+                <div className="card-unit">{pct(gradeDistribution.C + gradeDistribution.D)} of total</div>
               </div>
               <div className="card">
-                <div className="card-label">100% RE Target</div>
-                <div className="card-value" style={{color: "var(--green)"}}>{withRE}</div>
-                <div className="card-unit">{pct(withRE)} of total</div>
+                <div className="card-label">F-Grade Minimal</div>
+                <div className="card-value" style={{color: "var(--red)"}}>{gradeDistribution.F}</div>
+                <div className="card-unit">{pct(gradeDistribution.F)} of total</div>
               </div>
               <div className="card">
-                <div className="card-label">2030 Interim Targets</div>
-                <div className="card-value" style={{color: "var(--accent)"}}>{withInterim}</div>
-                <div className="card-unit">{pct(withInterim)} of total</div>
+                <div className="card-label">Deep Dives</div>
+                <div className="card-value" style={{color: "var(--accent)"}}>{companies.filter(c => c.deepDive).length}</div>
+                <div className="card-unit">Detailed analyses available</div>
+              </div>
+            </div>
+
+            {/* Grade Distribution Doughnut */}
+            <div className="charts-row">
+              <div className="chart-container">
+                <div className="chart-title">Maturity Grade Distribution</div>
+                <div className="chart-canvas-wrap chart-canvas-sm">
+                  <ChartCanvas id="gradeChart" type="doughnut" data={gradeChartData} options={pieOptions} redrawKey="grade" />
+                </div>
+              </div>
+              <div className="chart-container">
+                <div className="chart-title">Scoring Methodology — 6 Pillars</div>
+                <div className="methodology-grid">
+                  {PILLAR_LABELS.map((label, i) => (
+                    <div className="methodology-item" key={label}>
+                      <div className="card-label">{label}</div>
+                      <div className="methodology-weight">{Math.round(PILLAR_WEIGHTS[i] * 100)}%</div>
+                      <div className="methodology-desc">
+                        {["Board oversight, exec comp, CDP reporting", "Net-zero, SBTi, 1.5°C alignment, scope", "S1/S2/S3, verification, trend data", "Published plan, CapEx, ICP, supply chain", "TCFD, scenario analysis, risk quantification", "RE progress, reductions achieved, offsets"][i]}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* ── SECTION 2: SBTi & SCOPE ── */}
-          <div className="section" id="sbti">
+          {/* ── SECTION 2: MATURITY RANKING ── */}
+          <div className="section" id="ranking">
             <div className="section-header">
               <span className="section-num">02</span>
               <div className="section-title-group">
-                <div className="section-esrs">Commitments Analysis</div>
-                <div className="section-title">SBTi Status & Emissions Scope Coverage</div>
+                <div className="section-esrs">Composite Score Ranking</div>
+                <div className="section-title">Climate Disclosure Maturity Ranking</div>
               </div>
             </div>
 
-            <div className="charts-row">
-              <div className="chart-container">
-                <div className="chart-title">SBTi Status Distribution</div>
-                <div className="chart-canvas-wrap chart-canvas-sm">
-                  <ChartCanvas id="sbtiChart" type="doughnut" data={sbtiChartData} options={pieOptions} />
+            <div className="chart-container">
+              <div className="chart-title">All {total} Companies — Ranked by Composite Maturity Score</div>
+              {ranked.map((c, i) => (
+                <div className="ranking-item" key={c.company}>
+                  <span className="ranking-rank">{i + 1}</span>
+                  <span className={"ranking-name" + (c.deepDive ? " has-deepdive" : "")}
+                        onClick={() => c.deepDive ? window.location.href = c.deepDive : null}>
+                    {c.company}
+                  </span>
+                  <GradeBadge grade={c.grade} size="sm" />
+                  <div className="ranking-track">
+                    <div className="ranking-fill" style={{width: c.composite + "%", background: gradeFillColor(c.grade)}}>
+                      {c.composite >= 15 ? c.composite : ""}
+                    </div>
+                  </div>
+                  {c.composite < 15 && <span style={{fontFamily: "IBM Plex Mono", fontSize: 10, color: "var(--text-dim)", minWidth: 20}}>{c.composite}</span>}
                 </div>
-              </div>
-              <div className="chart-container">
-                <div className="chart-title">Emissions Scope Coverage</div>
-                <div className="chart-canvas-wrap chart-canvas-sm">
-                  <ChartCanvas id="scopeChart" type="doughnut" data={scopeChartData} options={pieOptions} />
-                </div>
-              </div>
+              ))}
+            </div>
+
+            <div className="source-note">
+              Scores based on weighted assessment across 6 pillars: Governance (15%), Target Setting (20%), Emissions Disclosure (20%), Transition Planning (20%), Risk & Resilience (10%), Action & Progress (15%). Each pillar scored 0–100 based on sub-criteria including board oversight, SBTi status, scope coverage, TCFD alignment, and demonstrated emissions reductions. Grades: A (80–100), B (60–79), C (40–59), D (20–39), F (0–19).
             </div>
           </div>
 
@@ -709,11 +887,10 @@
               <table className="data-table">
                 <thead>
                   <tr>
+                    <th>Grade</th>
                     <th>Company</th>
                     <th>Net-Zero</th>
                     <th>2030 Interim Target</th>
-                    <th>Scope 1&2</th>
-                    <th>Scope 3</th>
                     <th>SBTi</th>
                     <th>RE Target</th>
                     <th>Report</th>
@@ -724,14 +901,13 @@
                   {activeCompanies.map(c => (
                     <tr key={c.company} className={selectedCompany === c.company ? "row-selected" : ""}
                         onClick={() => handleRowClick(c)}>
+                      <td><GradeBadge grade={c.grade} score={c.composite} size="sm" /></td>
                       <td className={c.deepDive ? "highlight" : ""} style={{fontWeight: 500, whiteSpace: "nowrap"}}>
                         {c.company}
                         {c.deepDive && <span style={{marginLeft: 8, fontSize: "9px", color: "var(--accent)", letterSpacing: "0.5px"}}>DEEP DIVE →</span>}
                       </td>
                       <td><span className={c.netZeroTarget !== "Not disclosed" && c.netZeroTarget !== "Not formally set" ? "text-green" : "text-muted"}>{c.netZeroTarget}</span></td>
                       <td style={{maxWidth: 180, fontSize: "11px"}}>{c.interimTarget2030 !== "Not disclosed" ? c.interimTarget2030 : <span className="text-muted">—</span>}</td>
-                      <td><ScopeBadge active={c.scope12} label="S1&2" /></td>
-                      <td><ScopeBadge active={c.scope3} label="S3" /></td>
                       <td><SBTiBadge status={c.sbtiStatus} /></td>
                       <td>{c.reTarget === "100%" ? <span className="text-green">100% {c.reTargetYear === "Achieved" ? "(Achieved)" : `by ${c.reTargetYear}`}</span> : <span className="text-muted">—</span>}</td>
                       <td>{c.reportUrl ? <a href={c.reportUrl} target="_blank" rel="noopener noreferrer" className="report-link" onClick={(e) => e.stopPropagation()}><ExternalIcon />{c.reportLabel}</a> : <span className="text-muted">—</span>}</td>
@@ -752,15 +928,42 @@
               </table>
             </div>
 
-            {/* Detail panel (non-Mars companies) */}
+            {/* Detail panel */}
             {selected && !selected.deepDive && (
               <div className="detail-panel">
                 <div className="detail-panel-header">
                   <h2>{selected.company}</h2>
-                  <button className="detail-close" onClick={() => setSelectedCompany(null)}>✕ Close</button>
+                  <div style={{display: "flex", alignItems: "center", gap: 12}}>
+                    <GradeBadge grade={selected.grade} score={selected.composite} />
+                    <button className="detail-close" onClick={() => setSelectedCompany(null)}>✕ Close</button>
+                  </div>
                 </div>
 
-                <div className="detail-grid">
+                <div className="charts-row">
+                  {/* Radar chart */}
+                  <div className="chart-container" style={{marginBottom: 0}}>
+                    <div className="chart-title">Maturity Profile — 6 Pillars</div>
+                    <div className="chart-canvas-wrap" style={{maxHeight: 260}}>
+                      <ChartCanvas id={"radar-" + selected.company} type="radar" data={radarData} options={radarOptions} redrawKey={selected.company} />
+                    </div>
+                  </div>
+
+                  {/* Pillar scores */}
+                  <div className="chart-container" style={{marginBottom: 0}}>
+                    <div className="chart-title">Pillar Scores</div>
+                    {PILLAR_LABELS.map((label, i) => (
+                      <div className="bar-row" key={label} style={{marginBottom: 8}}>
+                        <span className="bar-label" style={{minWidth: 80, fontSize: 10}}>{label}</span>
+                        <div className="bar-track" style={{height: 16}}>
+                          <div className="bar-fill" style={{width: selected.pillars[i] + "%", background: gradeFillColor(getGrade(selected.pillars[i]))}}></div>
+                        </div>
+                        <span className="bar-value" style={{minWidth: 40, fontSize: 11, color: gradeColor(getGrade(selected.pillars[i]))}}>{selected.pillars[i]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="detail-grid" style={{marginTop: 16}}>
                   <div className="detail-row">
                     <div className="detail-key">Net-Zero Target</div>
                     <div className={"detail-val" + (selected.netZeroTarget !== "Not disclosed" ? " green" : " muted")}>{selected.netZeroTarget}</div>
@@ -799,8 +1002,8 @@
 
           {/* Footer */}
           <footer className="page-footer">
-            <p><strong style={{color: "var(--text-muted)"}}>Data Notes</strong></p>
-            <p>Data sourced from public sustainability reports, CDP disclosures, and company websites. Compiled February 2026. For benchmarking purposes only.</p>
+            <p><strong style={{color: "var(--text-muted)"}}>Data & Methodology Notes</strong></p>
+            <p>Data sourced from public sustainability reports, CDP disclosures, SBTi Target Dashboard, and company websites. Maturity scores assessed across six pillars: Governance & Accountability (15%), Target Setting (20%), Emissions Disclosure (20%), Transition Planning (20%), Risk & Resilience (10%), Action & Progress (15%). Each pillar scored 0–100 based on sub-criteria. Compiled February 2026. For benchmarking purposes only.</p>
           </footer>
 
         </div>
